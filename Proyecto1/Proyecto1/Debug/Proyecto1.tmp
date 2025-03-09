@@ -23,10 +23,15 @@
   <FILE>Proyecto1.lss</FILE>
  </OUTPUT_FILES>
  <LABELS>
-  <SETUP><FILE>D:\Documents\GitHub\Proyecto1\Proyecto1\Proyecto1\main.asm</FILE><LINE>37</LINE></SETUP>
-  <TIMER0_ISR><FILE>D:\Documents\GitHub\Proyecto1\Proyecto1\Proyecto1\main.asm</FILE><LINE>92</LINE></TIMER0_ISR>
-  <Tabla7seg><FILE>D:\Documents\GitHub\Proyecto1\Proyecto1\Proyecto1\main.asm</FILE><LINE>32</LINE></Tabla7seg>
-  <MAIN><FILE>D:\Documents\GitHub\Proyecto1\Proyecto1\Proyecto1\main.asm</FILE><LINE>87</LINE></MAIN>
-  <FIN_TIMER0><FILE>D:\Documents\GitHub\Proyecto1\Proyecto1\Proyecto1\main.asm</FILE><LINE>102</LINE></FIN_TIMER0>
+  <SETUP><FILE>D:\Documents\GitHub\Proyecto1\Proyecto1\Proyecto1\main.asm</FILE><LINE>52</LINE></SETUP>
+  <TIMER1_ISR><FILE>D:\Documents\GitHub\Proyecto1\Proyecto1\Proyecto1\main.asm</FILE><LINE>142</LINE></TIMER1_ISR>
+  <TIMER0_ISR><FILE>D:\Documents\GitHub\Proyecto1\Proyecto1\Proyecto1\main.asm</FILE><LINE>104</LINE></TIMER0_ISR>
+  <Tabla7seg><FILE>D:\Documents\GitHub\Proyecto1\Proyecto1\Proyecto1\main.asm</FILE><LINE>47</LINE></Tabla7seg>
+  <INICIO_TIMERS><FILE>D:\Documents\GitHub\Proyecto1\Proyecto1\Proyecto1\main.asm</FILE><LINE>184</LINE></INICIO_TIMERS>
+  <MAIN><FILE>D:\Documents\GitHub\Proyecto1\Proyecto1\Proyecto1\main.asm</FILE><LINE>99</LINE></MAIN>
+  <SALIDA_PORTD><FILE>D:\Documents\GitHub\Proyecto1\Proyecto1\Proyecto1\main.asm</FILE><LINE>114</LINE></SALIDA_PORTD>
+  <FIN_TIMER0><FILE>D:\Documents\GitHub\Proyecto1\Proyecto1\Proyecto1\main.asm</FILE><LINE>133</LINE></FIN_TIMER0>
+  <FIN_TIMER1><FILE>D:\Documents\GitHub\Proyecto1\Proyecto1\Proyecto1\main.asm</FILE><LINE>177</LINE></FIN_TIMER1>
+  <CONTINUAR_TIMER1_ISR><FILE>D:\Documents\GitHub\Proyecto1\Proyecto1\Proyecto1\main.asm</FILE><LINE>171</LINE></CONTINUAR_TIMER1_ISR>
  </LABELS>
 </ASSEMBLER_INFO>
