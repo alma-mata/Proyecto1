@@ -20,18 +20,38 @@
 .equ	T1VALUEH = 0x0B
 .equ	T1VALUEL = 0xDC		//0x0BDC = 3036
 // Variables globales (Registros)
-.def	SALIDA7 = R16
-.def	out_PORTD = R17
-.def	CONTADOR7 = R18
+.def	out_PORTD = R2
+.def	in_PORTC = R3
+.def	out_MODO = R4		// Salida para PC4 y PC5
+.def	CONTADOR7 = R5
+.def	SALIDA7 = R6
+.def	max_dia = R7
+.def	contador_dia = R8
+.def	puntos_LED = R9
+
+.def	variable1 = R16
+.def	variable2 = R17
+.def	estado = R18
 .def	ciclo_hora = R19
-.def	out_PORTB = R20
-.def	minu_U = R21
+.def	contador_mes = R20
+.def	out_PORTB = R21
+
+/*.def	minu_U = R21
 .def	minu_D = R22
 .def	hour_U = R23
-.def	hour_D = R24
-.def	puntos_LED = R25
+.def	hour_D = R24*/
 
 // Variables SRAM
+.dseg
+.org	SRAM_START
+minu_U:		.byte 1
+minu_D:		.byte 1
+hour_U:		.byte 1
+hour_D:		.byte 1
+dia_U:		.byte 1
+dia_D:		.byte 1
+mes_U:		.byte 1
+mes_D:		.byte 1
 
 // Codigo FLASH
 .cseg
@@ -83,13 +103,14 @@ SETUP:
 	OUT		PORTD, R16				// Muestra "0" en el display
 
 	//Inicializacion de variables
-	LDI		out_PORTB, 0x01
-	LDI		puntos_LED, 0x80
+	LDI		R16, 0x80
+	MOV		puntos_LED, R16
 	CLR		ciclo_hora
-	LDI		minu_U, 0x09
-	LDI		minu_D, 0x05
-	LDI		hour_U, 0x09
-	LDI		hour_D, 0x01
+	LDI		R16, 0x00
+	STS		minu_U, R16
+	STS		minu_D, R16
+	STS		hour_U, R16
+	STS		hour_D, R16
 
 	SEI
 
@@ -113,16 +134,16 @@ TIMER0_ISR:
 	LDI		out_PORTB, 0x01
 SALIDA_PORTD:
 	IN		out_PORTD, PORTD
-	ANDI	out_PORTD, 0x80
+	AND		out_PORTD, puntos_LED
 
 	SBRC	out_PORTB, 0				// Escoge salida de unidades o decenas
-	MOV		CONTADOR7, minu_U			// Copia valor en la salida del contador
+	LDS		CONTADOR7, minu_U			// Copia valor en la salida del contador
 	SBRC	out_PORTB, 1
-	MOV		CONTADOR7, minu_D
+	LDS		CONTADOR7, minu_D
 	SBRC	out_PORTB, 2
-	MOV		CONTADOR7, hour_U
+	LDS		CONTADOR7, hour_U
 	SBRC	out_PORTB, 3
-	MOV		CONTADOR7, hour_D
+	LDS		CONTADOR7, hour_D
 
 	LDI		ZH, HIGH(Tabla7seg<<1)	// Parte alta de Tabla7seg que esta en la Flash
 	LDI		ZL, LOW(Tabla7seg<<1)	// Parte baja de la tabla
@@ -152,28 +173,49 @@ TIMER1_ISR:
 	CPI		ciclo_hora, 1
 	BRNE	FIN_TIMER1
 	CLR		ciclo_hora
-	INC		minu_U
-	CPI		minu_U, 0x0A
-	BRNE	FIN_TIMER1
-	CLR		minu_U
-	INC		minu_D
-	CPI		minu_D, 0x06
-	BRNE	FIN_TIMER1
-	CLR		minu_D
-	INC		hour_U
-	CPI		hour_D, 0x02
-	BRNE	CONTINUAR_TIMER1_ISR
-	CPI		hour_U, 0x04
-	BRNE	CONTINUAR_TIMER1_ISR
-	CLR		hour_U
-	CLR		hour_D
-	RJMP	FIN_TIMER1
-CONTINUAR_TIMER1_ISR:
-	CPI		hour_U, 0x0A
-	BRNE	FIN_TIMER1
-	CLR		hour_U
-	INC		hour_D
 
+	LDS		variable1, minu_U
+	INC		variable1
+	CPI		variable1, 0x0A
+	BRNE	GUARDAR_MINU_U
+	CLR		variable1
+	STS		minu_U, variable1
+
+	LDS		variable1, minu_D
+	INC		variable1
+	CPI		variable1, 0x06
+	BRNE	GUARDAR_MINU_D
+	CLR		variable1
+	STS		minu_D, variable1
+
+	LDS		variable1, hour_U
+	LDS		variable2, hour_D
+	INC		variable1
+	CPI		variable2, 0x02
+	BRNE	CONTINUAR_TIMER1_ISR
+	CPI		variable1, 0x04
+	BRNE	CONTINUAR_TIMER1_ISR
+	CLR		variable1
+	CLR		variable2
+	STS		hour_U, variable1
+	STS		hour_D, variable2
+	RJMP	FIN_TIMER1
+
+	CONTINUAR_TIMER1_ISR:
+		CPI		variable1, 0x0A
+		BRNE	GUARDAR_HOUR
+		CLR		variable1
+		INC		variable2
+		GUARDAR_HOUR:
+			STS		hour_U, variable1
+			STS		hour_D, variable2
+			RJMP	FIN_TIMER1
+	GUARDAR_MINU_U:
+		STS		minu_U, variable1
+		RJMP	FIN_TIMER1
+	GUARDAR_MINU_D:
+		STS		minu_D, variable1
+		RJMP	FIN_TIMER1
 FIN_TIMER1:
 	POP		R16
 	OUT		SREG, R16
