@@ -23,22 +23,41 @@
   <FILE>Proyecto1.lss</FILE>
  </OUTPUT_FILES>
  <LABELS>
-  <minu_U><FILE>D:\Documents\GitHub\Proyecto1\Proyecto1\Proyecto1\main.asm</FILE><LINE>47</LINE></minu_U>
-  <minu_D><FILE>D:\Documents\GitHub\Proyecto1\Proyecto1\Proyecto1\main.asm</FILE><LINE>48</LINE></minu_D>
-  <hour_U><FILE>D:\Documents\GitHub\Proyecto1\Proyecto1\Proyecto1\main.asm</FILE><LINE>49</LINE></hour_U>
-  <hour_D><FILE>D:\Documents\GitHub\Proyecto1\Proyecto1\Proyecto1\main.asm</FILE><LINE>50</LINE></hour_D>
-  <SETUP><FILE>D:\Documents\GitHub\Proyecto1\Proyecto1\Proyecto1\main.asm</FILE><LINE>68</LINE></SETUP>
-  <TIMER1_ISR><FILE>D:\Documents\GitHub\Proyecto1\Proyecto1\Proyecto1\main.asm</FILE><LINE>159</LINE></TIMER1_ISR>
-  <TIMER0_ISR><FILE>D:\Documents\GitHub\Proyecto1\Proyecto1\Proyecto1\main.asm</FILE><LINE>121</LINE></TIMER0_ISR>
-  <Tabla7seg><FILE>D:\Documents\GitHub\Proyecto1\Proyecto1\Proyecto1\main.asm</FILE><LINE>63</LINE></Tabla7seg>
-  <INICIO_TIMERS><FILE>D:\Documents\GitHub\Proyecto1\Proyecto1\Proyecto1\main.asm</FILE><LINE>222</LINE></INICIO_TIMERS>
-  <MAIN><FILE>D:\Documents\GitHub\Proyecto1\Proyecto1\Proyecto1\main.asm</FILE><LINE>116</LINE></MAIN>
-  <SALIDA_PORTD><FILE>D:\Documents\GitHub\Proyecto1\Proyecto1\Proyecto1\main.asm</FILE><LINE>131</LINE></SALIDA_PORTD>
-  <FIN_TIMER0><FILE>D:\Documents\GitHub\Proyecto1\Proyecto1\Proyecto1\main.asm</FILE><LINE>150</LINE></FIN_TIMER0>
-  <FIN_TIMER1><FILE>D:\Documents\GitHub\Proyecto1\Proyecto1\Proyecto1\main.asm</FILE><LINE>215</LINE></FIN_TIMER1>
-  <GUARDAR_MINU_U><FILE>D:\Documents\GitHub\Proyecto1\Proyecto1\Proyecto1\main.asm</FILE><LINE>209</LINE></GUARDAR_MINU_U>
-  <GUARDAR_MINU_D><FILE>D:\Documents\GitHub\Proyecto1\Proyecto1\Proyecto1\main.asm</FILE><LINE>212</LINE></GUARDAR_MINU_D>
-  <CONTINUAR_TIMER1_ISR><FILE>D:\Documents\GitHub\Proyecto1\Proyecto1\Proyecto1\main.asm</FILE><LINE>200</LINE></CONTINUAR_TIMER1_ISR>
-  <GUARDAR_HOUR><FILE>D:\Documents\GitHub\Proyecto1\Proyecto1\Proyecto1\main.asm</FILE><LINE>205</LINE></GUARDAR_HOUR>
+  <minu_D><FILE>D:\Documents\GitHub\Proyecto1\Proyecto1\Proyecto1\main.asm</FILE><LINE>45</LINE></minu_D>
+  <minu_U><FILE>D:\Documents\GitHub\Proyecto1\Proyecto1\Proyecto1\main.asm</FILE><LINE>46</LINE></minu_U>
+  <hour_D><FILE>D:\Documents\GitHub\Proyecto1\Proyecto1\Proyecto1\main.asm</FILE><LINE>47</LINE></hour_D>
+  <hour_U><FILE>D:\Documents\GitHub\Proyecto1\Proyecto1\Proyecto1\main.asm</FILE><LINE>48</LINE></hour_U>
+  <dia_D><FILE>D:\Documents\GitHub\Proyecto1\Proyecto1\Proyecto1\main.asm</FILE><LINE>49</LINE></dia_D>
+  <dia_U><FILE>D:\Documents\GitHub\Proyecto1\Proyecto1\Proyecto1\main.asm</FILE><LINE>50</LINE></dia_U>
+  <mes_D><FILE>D:\Documents\GitHub\Proyecto1\Proyecto1\Proyecto1\main.asm</FILE><LINE>51</LINE></mes_D>
+  <mes_U><FILE>D:\Documents\GitHub\Proyecto1\Proyecto1\Proyecto1\main.asm</FILE><LINE>52</LINE></mes_U>
+  <SETUP><FILE>D:\Documents\GitHub\Proyecto1\Proyecto1\Proyecto1\main.asm</FILE><LINE>72</LINE></SETUP>
+  <PORTC_ISR><FILE>D:\Documents\GitHub\Proyecto1\Proyecto1\Proyecto1\main.asm</FILE><LINE>328</LINE></PORTC_ISR>
+  <TIMER1_ISR><FILE>D:\Documents\GitHub\Proyecto1\Proyecto1\Proyecto1\main.asm</FILE><LINE>307</LINE></TIMER1_ISR>
+  <TIMER0_ISR><FILE>D:\Documents\GitHub\Proyecto1\Proyecto1\Proyecto1\main.asm</FILE><LINE>274</LINE></TIMER0_ISR>
+  <Tabla7seg><FILE>D:\Documents\GitHub\Proyecto1\Proyecto1\Proyecto1\main.asm</FILE><LINE>67</LINE></Tabla7seg>
+  <Tabla_maxDIAS><FILE>D:\Documents\GitHub\Proyecto1\Proyecto1\Proyecto1\main.asm</FILE><LINE>68</LINE></Tabla_maxDIAS>
+  <INICIO_TIMERS><FILE>D:\Documents\GitHub\Proyecto1\Proyecto1\Proyecto1\main.asm</FILE><LINE>358</LINE></INICIO_TIMERS>
+  <NUEVO_MES><FILE>D:\Documents\GitHub\Proyecto1\Proyecto1\Proyecto1\main.asm</FILE><LINE>210</LINE></NUEVO_MES>
+  <MAIN><FILE>D:\Documents\GitHub\Proyecto1\Proyecto1\Proyecto1\main.asm</FILE><LINE>132</LINE></MAIN>
+  <INC_HORA><FILE>D:\Documents\GitHub\Proyecto1\Proyecto1\Proyecto1\main.asm</FILE><LINE>142</LINE></INC_HORA>
+  <CAMBIO_DIA><FILE>D:\Documents\GitHub\Proyecto1\Proyecto1\Proyecto1\main.asm</FILE><LINE>190</LINE></CAMBIO_DIA>
+  <GUARDAR_MINU_U><FILE>D:\Documents\GitHub\Proyecto1\Proyecto1\Proyecto1\main.asm</FILE><LINE>181</LINE></GUARDAR_MINU_U>
+  <GUARDAR_MINU_D><FILE>D:\Documents\GitHub\Proyecto1\Proyecto1\Proyecto1\main.asm</FILE><LINE>184</LINE></GUARDAR_MINU_D>
+  <CONTINUAR_INC_HORA><FILE>D:\Documents\GitHub\Proyecto1\Proyecto1\Proyecto1\main.asm</FILE><LINE>172</LINE></CONTINUAR_INC_HORA>
+  <FIN_INC_HORA><FILE>D:\Documents\GitHub\Proyecto1\Proyecto1\Proyecto1\main.asm</FILE><LINE>187</LINE></FIN_INC_HORA>
+  <GUARDAR_HOUR><FILE>D:\Documents\GitHub\Proyecto1\Proyecto1\Proyecto1\main.asm</FILE><LINE>177</LINE></GUARDAR_HOUR>
+  <GUARDAR_DIA_U><FILE>D:\Documents\GitHub\Proyecto1\Proyecto1\Proyecto1\main.asm</FILE><LINE>207</LINE></GUARDAR_DIA_U>
+  <CONTINUAR_NUEVO_MES><FILE>D:\Documents\GitHub\Proyecto1\Proyecto1\Proyecto1\main.asm</FILE><LINE>221</LINE></CONTINUAR_NUEVO_MES>
+  <GUARDAR_MES_D><FILE>D:\Documents\GitHub\Proyecto1\Proyecto1\Proyecto1\main.asm</FILE><LINE>234</LINE></GUARDAR_MES_D>
+  <GUARDAR_MES_U><FILE>D:\Documents\GitHub\Proyecto1\Proyecto1\Proyecto1\main.asm</FILE><LINE>241</LINE></GUARDAR_MES_U>
+  <MOSTRAR_HORA><FILE>D:\Documents\GitHub\Proyecto1\Proyecto1\Proyecto1\main.asm</FILE><LINE>247</LINE></MOSTRAR_HORA>
+  <MOSTRAR_FECHA><FILE>D:\Documents\GitHub\Proyecto1\Proyecto1\Proyecto1\main.asm</FILE><LINE>259</LINE></MOSTRAR_FECHA>
+  <SALIDA_PORTD><FILE>D:\Documents\GitHub\Proyecto1\Proyecto1\Proyecto1\main.asm</FILE><LINE>284</LINE></SALIDA_PORTD>
+  <FIN_TIMER0><FILE>D:\Documents\GitHub\Proyecto1\Proyecto1\Proyecto1\main.asm</FILE><LINE>298</LINE></FIN_TIMER0>
+  <FIN_TIMER1><FILE>D:\Documents\GitHub\Proyecto1\Proyecto1\Proyecto1\main.asm</FILE><LINE>321</LINE></FIN_TIMER1>
+  <UNDERFLOW_ESTADO><FILE>D:\Documents\GitHub\Proyecto1\Proyecto1\Proyecto1\main.asm</FILE><LINE>345</LINE></UNDERFLOW_ESTADO>
+  <OVERFLOW_ESTADO><FILE>D:\Documents\GitHub\Proyecto1\Proyecto1\Proyecto1\main.asm</FILE><LINE>348</LINE></OVERFLOW_ESTADO>
+  <FIN_PORTC_ISR><FILE>D:\Documents\GitHub\Proyecto1\Proyecto1\Proyecto1\main.asm</FILE><LINE>351</LINE></FIN_PORTC_ISR>
  </LABELS>
 </ASSEMBLER_INFO>
