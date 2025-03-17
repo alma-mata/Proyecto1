@@ -1,5 +1,5 @@
 
-AVRASM ver. 2.2.8  D:\Documents\GitHub\Proyecto1\Proyecto1\Proyecto1\main.asm Fri Mar 14 17:45:09 2025
+AVRASM ver. 2.2.8  D:\Documents\GitHub\Proyecto1\Proyecto1\Proyecto1\main.asm Mon Mar 17 17:04:41 2025
 
 [builtin](2): Including file 'C:/Program Files (x86)\Atmel\Studio\7.0\Packs\atmel\ATmega_DFP\1.7.374\avrasm\inc\m328Pdef.inc'
 D:\Documents\GitHub\Proyecto1\Proyecto1\Proyecto1\main.asm(17): Including file 'C:/Program Files (x86)\Atmel\Studio\7.0\Packs\atmel\ATmega_DFP\1.7.374\avrasm\inc\M328PDEF.inc'
@@ -1050,6 +1050,7 @@ D:\Documents\GitHub\Proyecto1\Proyecto1\Proyecto1\main.asm(17): Including file '
                                  .equ	T0VALUE = 131
                                  .equ	T1VALUEH = 0x0B
                                  .equ	T1VALUEL = 0xDC		//0x0BDC = 3036
+                                 .equ	T2VALUE = 131
                                  .equ	max_ciclosT1 = 1
                                  // Variables globales (Registros)
                                  .def	out_PORTD = R2
@@ -1087,11 +1088,11 @@ D:\Documents\GitHub\Proyecto1\Proyecto1\Proyecto1\main.asm(17): Including file '
                                  .org	0x0000
 000000 c02b                      	RJMP	SETUP
                                  .org	PCI1addr			// Pin Change Interrupt PORT C
-000008 c10d                      	RJMP	PORTC_ISR
+000008 c17d                      	RJMP	PORTC_ISR
                                  .org	OVF1addr
-00001a c0ec                      	RJMP	TIMER1_ISR
+00001a c155                      	RJMP	TIMER1_ISR
                                  .org	OVF0addr
-000020 c0cb                      	RJMP TIMER0_ISR
+000020 c115                      	RJMP TIMER0_ISR
                                  
                                  //--------- Tablas ---------
                                  // Tabla de valores del display de 7 segmentos
@@ -1123,28 +1124,28 @@ D:\Documents\GitHub\Proyecto1\Proyecto1\Proyecto1\main.asm(17): Including file '
 000034 e004                      	LDI		R16, (1 << CLKPS2)
 000035 9300 0061                 	STS		CLKPR, R16				// Configurar Prescaler a 16 F_cpu = 1MHz
                                  
-000037 940e 012b                 	CALL	INICIO_TIMERS
+000037 940e 01a1                 	CALL	INICIO_TIMERS
                                  
                                  	// CONFIGURACIÓN DE ENTRADAS Y SALIDAS
-                                 	// Configuración PORT C como entrada con pull-up habilitado
-000039 ef00                      	LDI		R16, 0xF0
-00003a b907                      	OUT		DDRC, R16				// Activa al PORTC como entrada
-00003b e00f                      	LDI		R16, 0x0F
-00003c b908                      	OUT		PORTC, R16				// Habilita pull-ups
                                  	// Configuración PORT B como salida inicialmente apagada
-00003d ef0f                      	LDI		R16, 0xFF
-00003e b904                      	OUT		DDRB, R16				// Activa los 4 bits menos significativos como salidas
-00003f e001                      	LDI		R16, 0x01
-000040 b905                      	OUT		PORTB, R16				// Deja encendido PB0
+000039 ef0f                      	LDI		R16, 0xFF
+00003a b904                      	OUT		DDRB, R16				// Activa los 4 bits menos significativos como salidas
+00003b e001                      	LDI		R16, 0x01
+00003c b905                      	OUT		PORTB, R16				// Deja encendido PB0
                                  	// Configuración PORT D como salida inicialmente apagada
-000041 ef0f                      	LDI		R16, 0xFF
-000042 b90a                      	OUT		DDRD, R16				// Activa los bits como salida
-000043 e002                      	LDI		R16, 0x02
-000044 b90b                      	OUT		PORTD, R16				// Muestra "0" en el display
+00003d ef0f                      	LDI		R16, 0xFF
+00003e b90a                      	OUT		DDRD, R16				// Activa los bits como salida
+00003f e002                      	LDI		R16, 0x02
+000040 b90b                      	OUT		PORTD, R16				// Muestra "0" en el display
+                                 	// Configuración PORT C como entrada con pull-up habilitado
+000041 ef00                      	LDI		R16, 0xF0
+000042 b907                      	OUT		DDRC, R16				// Activa al PORTC como entrada
+000043 e00f                      	LDI		R16, 0x0F
+000044 b908                      	OUT		PORTC, R16				// Habilita pull-ups
                                  	// CONFIGURACION DE INTERRUPCIONES en los puertos
 000045 e002                      	LDI		R16, (1 << PCIE1)
 000046 9300 0068                     STS		PCICR, R16				// Habilita interrupciones en PORTC
-000048 e00f                          LDI		R16, 0x0F
+000048 e00f                          LDI		R16, (1 << PCINT11) | (1 << PCINT10) | (1 << PCINT9) | (1 << PCINT8)
 000049 9300 006c                     STS		PCMSK1, R16				// Habilita interrupciones en PC0 y PC1
                                  
                                  	//Inicializacion de variables
@@ -1163,7 +1164,7 @@ D:\Documents\GitHub\Proyecto1\Proyecto1\Proyecto1\main.asm(17): Including file '
 00005b e001                      	LDI		R16, 0x01
 00005c 2e80                      	MOV		contador_dia, R16
                                  
-00005d 940e 00ae                 	CALL	NUEVO_MES
+00005d 940e 00f8                 	CALL	NUEVO_MES
 00005f 9478                      	SEI
                                  
                                  //****************************************
@@ -1171,256 +1172,373 @@ D:\Documents\GitHub\Proyecto1\Proyecto1\Proyecto1\main.asm(17): Including file '
                                  //****************************************
                                  MAIN:
 000060 fd60                      	SBRC	bandera_ACCION, 0
-000061 940e 0067                 	CALL	INC_HORA
+000061 940e 00a4                 	CALL	INC_HORA
 000063 fd61                      	SBRC	bandera_ACCION, 1
-000064 940e 0099                 	CALL	CAMBIO_DIA
-000066 cff9                      	RJMP	MAIN
+000064 940e 00e3                 	CALL	CAMBIO_DIA
+000066 fd62                      	SBRC	bandera_ACCION, 2
+000067 940e 00d9                 	CALL	INCREMENTO
+000069 fd63                      	SBRC	bandera_ACCION, 3
+00006a 940e 006d                 	CALL	DECREMENTO
+00006c cff3                      	RJMP	MAIN
                                  
                                  //****************************************
                                  //			SUB-RUTINAS GENERALES
                                  //****************************************
+                                 
+                                 DECREMENTO:
+00006d 7f67                      	CBR		bandera_ACCION, 0b00001000
+00006e 3024                      	CPI		estado, 0b00000100
+00006f f019                      	BREQ	DECREMENTO_MINUTOS
+000070 3028                      	CPI		estado, 0b00001000
+000071 f0c1                      	BREQ	DECREMENTO_HORAS
+000072 9508                      	RET
+                                 
+                                 DECREMENTO_MINUTOS:
+000073 9100 0101                 	LDS		variable1, minu_U
+000075 3000                      	CPI		variable1, 0x00
+000076 f459                      	BRNE	SAVE_DEC_MINU
+000077 e009                      	LDI		variable1, 0x09
+000078 9300 0101                 	STS		minu_U, variable1
+00007a 9100 0100                 	LDS		variable1, minu_D
+00007c 3000                      	CPI		variable1, 0x00
+00007d f441                      	BRNE	SAVE_DEC_MIND
+00007e e005                      	LDI		variable1, 0x05
+00007f 9300 0100                 	STS		minu_D, variable1
+000081 9508                      	RET
+                                 	SAVE_DEC_MINU:
+000082 950a                      		DEC		variable1
+000083 9300 0101                 		STS		minu_U, variable1
+000085 9508                      		RET
+                                 	SAVE_DEC_MIND:
+000086 950a                      		DEC		variable1
+000087 9300 0100                 		STS		minu_D, variable1
+000089 9508                      		RET
+                                 
+                                 DECREMENTO_HORAS:
+00008a 9100 0103                 	LDS		variable1, hour_U
+00008c 3000                      	CPI		variable1, 0x00
+00008d f471                      	BRNE	SAVE_DEC_HOURU
+00008e e009                      	LDI		variable1, 0x09
+00008f 9300 0103                 	STS		hour_U, variable1
+000091 9100 0102                 	LDS		variable1, hour_D
+000093 3000                      	CPI		variable1, 0x00
+000094 f459                      	BRNE	SAVE_DEC_HOURD
+000095 e002                      	LDI		variable1, 0x02
+000096 9300 0102                 	STS		hour_D, variable1
+000098 e003                      	LDI		variable1, 0x03
+000099 9300 0103                 	STS		hour_U, variable1
+00009b 9508                      	RET
+                                 	SAVE_DEC_HOURU:
+00009c 950a                      		DEC		variable1
+00009d 9300 0103                 		STS		hour_U, variable1
+00009f 9508                      		RET
+                                 	SAVE_DEC_HOURD:
+0000a0 950a                      		DEC		variable1
+0000a1 9300 0102                 		STS		hour_D, variable1
+0000a3 9508                      		RET
+                                 
+                                 // ---------------- LOGICA DE HORA ----------------
                                  INC_HORA:
-000067 7f6e                      	CBR		bandera_ACCION, 1
+0000a4 7f6e                      	CBR		bandera_ACCION, 1
                                  
-000068 9100 0101                 	LDS		variable1, minu_U
-00006a 9503                      	INC		variable1
-00006b 300a                      	CPI		variable1, 0x0A
-00006c f529                      	BRNE	GUARDAR_MINU_U
-00006d 2700                      	CLR		variable1
-00006e 9300 0101                 	STS		minu_U, variable1
-                                 
-000070 9100 0100                 	LDS		variable1, minu_D
-000072 9503                      	INC		variable1
-000073 3006                      	CPI		variable1, 0x06
-000074 f501                      	BRNE	GUARDAR_MINU_D
-000075 2700                      	CLR		variable1
-000076 9300 0100                 	STS		minu_D, variable1
-                                 
-000078 9100 0103                 	LDS		variable1, hour_U
-00007a 9110 0102                 	LDS		variable2, hour_D
-00007c 9503                      	INC		variable1
-00007d 3012                      	CPI		variable2, 0x02
-00007e f451                      	BRNE	CONTINUAR_INC_HORA
-00007f 3004                      	CPI		variable1, 0x04
-000080 f441                      	BRNE	CONTINUAR_INC_HORA
-000081 2700                      	CLR		variable1
-000082 2711                      	CLR		variable2
-000083 9300 0103                 	STS		hour_U, variable1
-000085 9310 0102                 	STS		hour_D, variable2
-000087 6062                      	SBR		bandera_ACCION, 0b00000010	// Bandera que activa el cambio de dia
-000088 c00f                      	RJMP	FIN_INC_HORA
-                                 	CONTINUAR_INC_HORA:
-000089 300a                      		CPI		variable1, 0x0A
-00008a f411                      		BRNE	GUARDAR_HOUR
-00008b 2700                      		CLR		variable1
-00008c 9513                      		INC		variable2
-                                 		GUARDAR_HOUR:
-00008d 9300 0103                 			STS		hour_U, variable1
-00008f 9310 0102                 			STS		hour_D, variable2
-000091 c006                      			RJMP	FIN_INC_HORA
-                                 	GUARDAR_MINU_U:
-000092 9300 0101                 		STS		minu_U, variable1
-000094 c003                      		RJMP	FIN_INC_HORA
-                                 	GUARDAR_MINU_D:
-000095 9300 0100                 		STS		minu_D, variable1
-000097 c000                      		RJMP	FIN_INC_HORA
-                                 FIN_INC_HORA:	
-000098 9508                      	RET
-                                 
-                                 CAMBIO_DIA:
-000099 7f6d                      	CBR		bandera_ACCION, 2
-                                 
-00009a 1487                      	CP		contador_dia, max_dia
-00009b f091                      	BREQ	NUEVO_MES
-00009c 9483                      	INC		contador_dia
-                                 
-00009d 9100 0105                 	LDS		variable1, dia_U
-00009f 9503                      	INC		variable1
-0000a0 300a                      	CPI		variable1, 0x0A
-0000a1 f449                      	BRNE	GUARDAR_DIA_U
-0000a2 2700                      	CLR		variable1
-0000a3 9300 0105                 	STS		dia_U, variable1
-0000a5 9100 0104                 	LDS		variable1, dia_D
+                                 	AUMENTO_MINUTOS:
+0000a5 9100 0101                 	LDS		variable1, minu_U
 0000a7 9503                      	INC		variable1
-0000a8 9300 0104                 	STS		dia_D, variable1
-0000aa 9508                      	RET
+0000a8 300a                      	CPI		variable1, 0x0A
+0000a9 f549                      	BRNE	GUARDAR_MINU_U
+0000aa 2700                      	CLR		variable1
+0000ab 9300 0101                 	STS		minu_U, variable1
+0000ad 9100 0100                 	LDS		variable1, minu_D
+0000af 9503                      	INC		variable1
+0000b0 3006                      	CPI		variable1, 0x06
+0000b1 f521                      	BRNE	GUARDAR_MINU_D
+0000b2 2700                      	CLR		variable1
+0000b3 9300 0100                 	STS		minu_D, variable1
+0000b5 3024                      	CPI		estado, 0b00000100
+0000b6 f409                      	BRNE	AUMENTO_HORA
+0000b7 9508                      	RET
+                                 	AUMENTO_HORA:
+0000b8 9100 0103                 	LDS		variable1, hour_U
+0000ba 9110 0102                 	LDS		variable2, hour_D
+0000bc 9503                      	INC		variable1
+0000bd 3012                      	CPI		variable2, 0x02
+0000be f459                      	BRNE	CONTINUAR_INC_HORA
+0000bf 3004                      	CPI		variable1, 0x04
+0000c0 f449                      	BRNE	CONTINUAR_INC_HORA
+0000c1 2700                      	CLR		variable1
+0000c2 2711                      	CLR		variable2
+0000c3 9300 0103                 	STS		hour_U, variable1
+0000c5 9310 0102                 	STS		hour_D, variable2
+0000c7 ff23                      	SBRS	estado, 3
+0000c8 6062                      	SBR		bandera_ACCION, 0b00000010	// Bandera que activa el cambio de dia
+0000c9 9508                      	RET
+                                 	CONTINUAR_INC_HORA:
+0000ca 300a                      		CPI		variable1, 0x0A
+0000cb f411                      		BRNE	GUARDAR_HOUR
+0000cc 2700                      		CLR		variable1
+0000cd 9513                      		INC		variable2
+                                 		GUARDAR_HOUR:
+0000ce 9300 0103                 			STS		hour_U, variable1
+0000d0 9310 0102                 			STS		hour_D, variable2
+0000d2 9508                      			RET
+                                 	GUARDAR_MINU_U:
+0000d3 9300 0101                 		STS		minu_U, variable1
+0000d5 9508                      		RET
+                                 	GUARDAR_MINU_D:
+0000d6 9300 0100                 		STS		minu_D, variable1
+0000d8 9508                      		RET
+                                 
+                                 INCREMENTO:
+0000d9 7f6b                      	CBR		bandera_ACCION, 0b00000100
+0000da 3024                      	CPI		estado, 0b00000100
+0000db 940c 00a5                 	JMP 	AUMENTO_MINUTOS
+0000dd 3028                      	CPI		estado, 0b00001000
+0000de f2c9                      	BREQ	AUMENTO_HORA
+0000df 3120                      	CPI		estado, 0b00010000
+0000e0 f009                      	BREQ	AUMENTO_ALARMA
+0000e1 9508                      	RET
+                                 AUMENTO_ALARMA:
+0000e2 9508                      	RET
+                                 
+                                 // ---------------- LOGICA DE FECHA ----------------
+                                 CAMBIO_DIA:
+0000e3 7f6d                      	CBR		bandera_ACCION, 2
+                                 
+0000e4 1487                      	CP		contador_dia, max_dia
+0000e5 f091                      	BREQ	NUEVO_MES
+0000e6 9483                      	INC		contador_dia
+                                 
+0000e7 9100 0105                 	LDS		variable1, dia_U
+0000e9 9503                      	INC		variable1
+0000ea 300a                      	CPI		variable1, 0x0A
+0000eb f449                      	BRNE	GUARDAR_DIA_U
+0000ec 2700                      	CLR		variable1
+0000ed 9300 0105                 	STS		dia_U, variable1
+0000ef 9100 0104                 	LDS		variable1, dia_D
+0000f1 9503                      	INC		variable1
+0000f2 9300 0104                 	STS		dia_D, variable1
+0000f4 9508                      	RET
                                  	GUARDAR_DIA_U:
-0000ab 9300 0105                 		STS		dia_U, variable1
-0000ad 9508                      		RET
+0000f5 9300 0105                 		STS		dia_U, variable1
+0000f7 9508                      		RET
                                  NUEVO_MES:
-0000ae e001                      	LDI		R16, 0x01
-0000af 2e80                      	MOV		contador_dia, R16
-0000b0 e001                      	LDI		variable1, 0x01
-0000b1 9300 0105                 	STS		dia_U, variable1
-0000b3 e000                      	LDI		variable1, 0x00
-0000b4 9300 0104                 	STS		dia_D, variable1
+0000f8 e001                      	LDI		R16, 0x01
+0000f9 2e80                      	MOV		contador_dia, R16
+0000fa e001                      	LDI		variable1, 0x01
+0000fb 9300 0105                 	STS		dia_U, variable1
+0000fd e000                      	LDI		variable1, 0x00
+0000fe 9300 0104                 	STS		dia_D, variable1
                                  
-0000b6 304c                      	CPI		contador_mes, 0x0C
-0000b7 f409                      	BRNE	CONTINUAR_NUEVO_MES
-0000b8 2744                      	CLR		contador_mes
+000100 304c                      	CPI		contador_mes, 0x0C
+000101 f409                      	BRNE	CONTINUAR_NUEVO_MES
+000102 2744                      	CLR		contador_mes
                                  	CONTINUAR_NUEVO_MES:
-0000b9 e0f0                      	LDI		ZH, HIGH(Tabla_maxDIAS<<1)	// Parte alta de Tabla7seg que esta en la Flash
-0000ba e4ec                      	LDI		ZL, LOW(Tabla_maxDIAS<<1)	// Parte baja de la tabla
-0000bb 0fe4                      	ADD		ZL, contador_mes			// Suma el contador al puntero Z
-0000bc 9074                      	LPM		max_dia, Z					// Copia el valor del puntero
+000103 e0f0                      	LDI		ZH, HIGH(Tabla_maxDIAS<<1)	// Parte alta de Tabla7seg que esta en la Flash
+000104 e4ec                      	LDI		ZL, LOW(Tabla_maxDIAS<<1)	// Parte baja de la tabla
+000105 0fe4                      	ADD		ZL, contador_mes			// Suma el contador al puntero Z
+000106 9074                      	LPM		max_dia, Z					// Copia el valor del puntero
                                  
-0000bd 9543                      	INC		contador_mes
-0000be 304a                      	CPI		contador_mes, 0x0A
-0000bf f021                      	BREQ	GUARDAR_MES_D
-0000c0 304b                      	CPI		contador_mes, 0x0B
-0000c1 f011                      	BREQ	GUARDAR_MES_D
-0000c2 304c                      	CPI		contador_mes, 0x0C
-0000c3 f441                      	BRNE	GUARDAR_MES_U
+000107 9543                      	INC		contador_mes
+000108 304a                      	CPI		contador_mes, 0x0A
+000109 f021                      	BREQ	GUARDAR_MES_D
+00010a 304b                      	CPI		contador_mes, 0x0B
+00010b f011                      	BREQ	GUARDAR_MES_D
+00010c 304c                      	CPI		contador_mes, 0x0C
+00010d f441                      	BRNE	GUARDAR_MES_U
                                  	GUARDAR_MES_D:
-0000c4 e001                      		LDI		variable1, 0x01
-0000c5 9300 0106                 		STS		mes_D, variable1 
-0000c7 194a                      		SUB 	contador_mes, constante_10
-0000c8 9340 0107                 		STS		mes_U, contador_mes
-0000ca 0d4a                      		ADD		contador_mes, constante_10
-0000cb 9508                      		RET
+00010e e001                      		LDI		variable1, 0x01
+00010f 9300 0106                 		STS		mes_D, variable1 
+000111 194a                      		SUB 	contador_mes, constante_10
+000112 9340 0107                 		STS		mes_U, contador_mes
+000114 0d4a                      		ADD		contador_mes, constante_10
+000115 9508                      		RET
                                  	GUARDAR_MES_U:
-0000cc e000                      		LDI		variable1, 0x00
-0000cd 9300 0106                 		STS		mes_D, variable1
-0000cf 9340 0107                 		STS		mes_U, contador_mes
-0000d1 9508                      		RET
+000116 e000                      		LDI		variable1, 0x00
+000117 9300 0106                 		STS		mes_D, variable1
+000119 9340 0107                 		STS		mes_U, contador_mes
+00011b 9508                      		RET
                                  
+                                 // ---------------- LOGICA DE SALIDAS ----------------
                                  MOSTRAR_HORA: 
-0000d2 fd50                      	SBRC	out_PORTB, 0				// Escoge salida de unidades o decenas
-0000d3 9050 0101                 	LDS		CONTADOR7, minu_U			// Copia valor en la salida del contador
-0000d5 fd51                      	SBRC	out_PORTB, 1
-0000d6 9050 0100                 	LDS		CONTADOR7, minu_D
-0000d8 fd52                      	SBRC	out_PORTB, 2
-0000d9 9050 0103                 	LDS		CONTADOR7, hour_U
-0000db fd53                      	SBRC	out_PORTB, 3
-0000dc 9050 0102                 	LDS		CONTADOR7, hour_D
+00011c fd50                      	SBRC	out_PORTB, 0				// Escoge salida de unidades o decenas
+00011d 9050 0101                 	LDS		CONTADOR7, minu_U			// Copia valor en la salida del contador
+00011f fd51                      	SBRC	out_PORTB, 1
+000120 9050 0100                 	LDS		CONTADOR7, minu_D
+000122 fd52                      	SBRC	out_PORTB, 2
+000123 9050 0103                 	LDS		CONTADOR7, hour_U
+000125 fd53                      	SBRC	out_PORTB, 3
+000126 9050 0102                 	LDS		CONTADOR7, hour_D
                                  
-0000de 9508                      	RET
+000128 9508                      	RET
                                  
                                  MOSTRAR_FECHA: 
-0000df fd50                      	SBRC	out_PORTB, 0				// Escoge salida de unidades o decenas
-0000e0 9050 0107                 	LDS		CONTADOR7, mes_U			// Copia valor en la salida del contador
-0000e2 fd51                      	SBRC	out_PORTB, 1
-0000e3 9050 0106                 	LDS		CONTADOR7, mes_D
-0000e5 fd52                      	SBRC	out_PORTB, 2
-0000e6 9050 0105                 	LDS		CONTADOR7, dia_U
-0000e8 fd53                      	SBRC	out_PORTB, 3
-0000e9 9050 0104                 	LDS		CONTADOR7, dia_D
+000129 fd50                      	SBRC	out_PORTB, 0				// Escoge salida de unidades o decenas
+00012a 9050 0107                 	LDS		CONTADOR7, mes_U			// Copia valor en la salida del contador
+00012c fd51                      	SBRC	out_PORTB, 1
+00012d 9050 0106                 	LDS		CONTADOR7, mes_D
+00012f fd52                      	SBRC	out_PORTB, 2
+000130 9050 0105                 	LDS		CONTADOR7, dia_U
+000132 fd53                      	SBRC	out_PORTB, 3
+000133 9050 0104                 	LDS		CONTADOR7, dia_D
                                  
-0000eb 9508                      	RET
+000135 9508                      	RET
                                  
                                  //****************************************
                                  //		SUB-RUTINAS de INTERRUPCION
                                  //****************************************
                                  TIMER0_ISR:
-0000ec 930f                      	PUSH	R16
-0000ed b70f                      	IN		R16, SREG
-0000ee 930f                      	PUSH	R16
+000136 930f                      	PUSH	R16
+000137 931f                      	PUSH	R17
+000138 b70f                      	IN		R16, SREG
+000139 930f                      	PUSH	R16
                                  	
-0000ef b155                      	IN		out_PORTB, PORTB
-0000f0 0f55                      	LSL		out_PORTB
-0000f1 3150                      	CPI		out_PORTB, 0x10
-0000f2 f409                      	BRNE	SALIDA_PORTD
-0000f3 e051                      	LDI		out_PORTB, 0x01
+00013a b153                      	IN		out_PORTB, PINB
+00013b 0f55                      	LSL		out_PORTB
+00013c 3150                      	CPI		out_PORTB, 0x10
+00013d f409                      	BRNE	SALIDA_PORTD
+00013e e051                      	LDI		out_PORTB, 0x01
                                  SALIDA_PORTD:
-0000f4 b02b                      	IN		out_PORTD, PORTD
-0000f5 2029                      	AND		out_PORTD, puntos_LED
+00013f b02b                      	IN		out_PORTD, PORTD
+000140 2029                      	AND		out_PORTD, puntos_LED
                                  
-0000f6 fd20                      	SBRC	estado, 0
-0000f7 940e 00d2                 	CALL	MOSTRAR_HORA
-0000f9 fd21                      	SBRC	estado, 1
-0000fa 940e 00df                 	CALL	MOSTRAR_FECHA	// Muestra la hora en el display
+000141 fd20                      	SBRC	estado, 0
+000142 940e 011c                 	CALL	MOSTRAR_HORA
+000144 fd21                      	SBRC	estado, 1
+000145 940e 0129                 	CALL	MOSTRAR_FECHA	// Muestra la hora en el display
+000147 fd22                      	SBRC	estado, 2
+000148 940e 011c                 	CALL	MOSTRAR_HORA
+00014a fd23                      	SBRC	estado, 3
+00014b 940e 011c                 	CALL	MOSTRAR_HORA	// Muestra la hora en el display
                                  
-0000fc e0f0                      	LDI		ZH, HIGH(Tabla7seg<<1)	// Parte alta de Tabla7seg que esta en la Flash
-0000fd e4e2                      	LDI		ZL, LOW(Tabla7seg<<1)	// Parte baja de la tabla
-0000fe 0de5                      	ADD		ZL, CONTADOR7			// Suma el contador al puntero Z
-0000ff 9064                      	LPM		SALIDA7, Z				// Copia el valor del puntero
-000100 2826                      	OR		out_PORTD, SALIDA7
+00014d e0f0                      	LDI		ZH, HIGH(Tabla7seg<<1)	// Parte alta de Tabla7seg que esta en la Flash
+00014e e4e2                      	LDI		ZL, LOW(Tabla7seg<<1)	// Parte baja de la tabla
+00014f 0de5                      	ADD		ZL, CONTADOR7			// Suma el contador al puntero Z
+000150 9064                      	LPM		SALIDA7, Z				// Copia el valor del puntero
+                                 	
+000151 3024                      	CPI		estado, 0b00000100
+000152 f071                      	BREQ	APAGAR_DISPLAY34
+000153 3028                      	CPI		estado, 0b00001000
+000154 f029                      	BREQ	APAGAR_DISPLAY12
+000155 3120                      	CPI		estado, 0b00010000
+000156 f051                      	BREQ	APAGAR_DISPLAY34
+000157 3220                      	CPI		estado, 0b00100000
+000158 f009                      	BREQ	APAGAR_DISPLAY12
+000159 c00e                      	RJMP	FIN_TIMER0
+                                 	APAGAR_DISPLAY12:
+00015a 3054                      		CPI		out_PORTB, 0b00000100
+00015b f061                      		BREQ	FIN_TIMER0
+00015c 3058                      		CPI		out_PORTB, 0b00001000
+00015d f051                      		BREQ	FIN_TIMER0
+00015e e70f                      		LDI		R16, 0x7F
+00015f 2e60                      		MOV		SALIDA7, R16
+000160 c007                      		RJMP	FIN_TIMER0
+                                 	APAGAR_DISPLAY34:
+000161 3051                      		CPI		out_PORTB, 0b00000001
+000162 f029                      		BREQ	FIN_TIMER0
+000163 3052                      		CPI		out_PORTB, 0b00000010
+000164 f019                      		BREQ	FIN_TIMER0
+000165 e70f                      		LDI		R16, 0x7F
+000166 2e60                      		MOV		SALIDA7, R16
+000167 c000                      		RJMP	FIN_TIMER0
                                  FIN_TIMER0:
-000101 b955                      	OUT		PORTB, out_PORTB
-000102 b82b                      	OUT		PORTD, out_PORTD		// Muestra la salida en PORT D
-000103 910f                      	POP		R16
-000104 bf0f                      	OUT		SREG, R16
-000105 910f                      	POP		R16
+000168 2826                      	OR		out_PORTD, SALIDA7
+000169 b955                      	OUT		PORTB, out_PORTB
+00016a b82b                      	OUT		PORTD, out_PORTD		// Muestra la salida en PORT D
+00016b 910f                      	POP		R16
+00016c bf0f                      	OUT		SREG, R16
+00016d 911f                      	POP		R17
+00016e 910f                      	POP		R16
                                  
-000106 9518                      	RETI
+00016f 9518                      	RETI
                                  
                                  TIMER1_ISR:
-000107 930f                      	PUSH	R16
-000108 b70f                      	IN		R16, SREG
-000109 930f                      	PUSH	R16
+000170 930f                      	PUSH	R16
+000171 931f                      	PUSH	R17
+000172 b70f                      	IN		R16, SREG
+000173 930f                      	PUSH	R16
                                  	// Parpadeo de LEDs
-00010a b02b                      	IN		out_PORTD, PORTD
-00010b 2429                      	EOR		out_PORTD, puntos_LED
-00010c b82b                      	OUT		PORTD, out_PORTD
-                                 	// Incremento de HORA
-00010d 9533                      	INC		ciclo_hora
-00010e 3031                      	CPI		ciclo_hora, max_ciclosT1
-00010f f411                      	BRNE	FIN_TIMER1
-000110 2733                      	CLR		ciclo_hora
-000111 6061                      	SBR		bandera_ACCION, 0b00000001		// Activa el cambio de dia
-                                 FIN_TIMER1:
-000112 910f                      	POP		R16
-000113 bf0f                      	OUT		SREG, R16
-000114 910f                      	POP		R16
+000174 b02b                      	IN		out_PORTD, PORTD
+000175 2429                      	EOR		out_PORTD, puntos_LED
+000176 b82b                      	OUT		PORTD, out_PORTD
+                                 	
+000177 3021                      	CPI		estado, 0b00000001
+000178 f019                      	BREQ	INCREMENTO_HORA
+000179 3022                      	CPI		estado, 0b00000010
+00017a f009                      	BREQ	INCREMENTO_HORA
+00017b c005                      	RJMP	FIN_TIMER1
                                  
-000115 9518                      	RETI
+                                 	INCREMENTO_HORA:		// Incremento de HORA
+00017c 9533                      	INC		ciclo_hora
+00017d 3031                      	CPI		ciclo_hora, max_ciclosT1
+00017e f411                      	BRNE	FIN_TIMER1
+00017f 2733                      	CLR		ciclo_hora
+000180 6061                      	SBR		bandera_ACCION, 0b00000001		// Activa el cambio de dia
+                                 FIN_TIMER1:
+000181 910f                      	POP		R16
+000182 bf0f                      	OUT		SREG, R16
+000183 911f                      	POP		R17
+000184 910f                      	POP		R16
+000185 9518                      	RETI
                                  
                                  PORTC_ISR:
-000116 930f                      	PUSH	R16
-000117 b70f                      	IN		R16, SREG
-000118 930f                      	PUSH	R16
+000186 930f                      	PUSH	R16
+000187 931f                      	PUSH	R17
+000188 b70f                      	IN		R16, SREG
+000189 930f                      	PUSH	R16
                                  
-000119 b036                      	IN		in_PORTC, PINC
-00011a fe32                      	SBRS	in_PORTC, 2
-00011b 0f22                      	LSL		estado
-00011c fe33                      	SBRS	in_PORTC, 3
-00011d 9526                      	LSR		estado
+00018a b036                      	IN		in_PORTC, PINC
+00018b fe30                      	SBRS	in_PORTC, 0
+00018c 6064                      	SBR		bandera_ACCION, 0b00000100
+00018d fe31                      	SBRS	in_PORTC, 1
+00018e 6068                      	SBR		bandera_ACCION, 0b00001000
+00018f fe32                      	SBRS	in_PORTC, 2
+000190 0f22                      	LSL		estado
+000191 fe33                      	SBRS	in_PORTC, 3
+000192 9526                      	LSR		estado
                                  
-00011e 3020                      	CPI		estado, 0x00
-00011f f019                      	BREQ	UNDERFLOW_ESTADO
-000120 3820                      	CPI		estado, 0x80
-000121 f019                      	BREQ	OVERFLOW_ESTADO
-000122 c004                      	RJMP	FIN_PORTC_ISR
-                                 
+000193 3020                      	CPI		estado, 0b00000000
+000194 f019                      	BREQ	UNDERFLOW_ESTADO
+000195 3120                      	CPI		estado, 0b00010000
+000196 f019                      	BREQ	OVERFLOW_ESTADO
+000197 c004                      	RJMP	FIN_PORTC_ISR
                                  	UNDERFLOW_ESTADO:
-000123 e420                      		LDI		estado, 0x40
-000124 c002                      		RJMP	FIN_PORTC_ISR
+000198 e028                      		LDI		estado, 0b00001000
+000199 c002                      		RJMP	FIN_PORTC_ISR
                                  	OVERFLOW_ESTADO:
-000125 e021                      		LDI		estado, 0x01
-000126 c000                      		RJMP	FIN_PORTC_ISR
+00019a e021                      		LDI		estado, 0b00000001
+00019b c000                      		RJMP	FIN_PORTC_ISR
                                  FIN_PORTC_ISR:
-000127 910f                      	POP		R16
-000128 bf0f                      	OUT		SREG, R16
-000129 910f                      	POP		R16
-                                 
-00012a 9518                      	RETI
+00019c 910f                      	POP		R16
+00019d bf0f                      	OUT		SREG, R16
+00019e 911f                      	POP		R17
+00019f 910f                      	POP		R16
+0001a0 9518                      	RETI
                                  
                                  INICIO_TIMERS:
                                  	// INICIA TIMER 0
-00012b e000                      	LDI		R16, 0x00				// Configuración Modo Normal
-00012c bd04                      	OUT		TCCR0A, R16
-00012d e002                      	LDI		R16, (1 << CS01)		// Prescaler = 8
-00012e bd05                      	OUT		TCCR0B, R16
-00012f e803                      	LDI		R16, T0VALUE			// Valor inicial del Timer0
-000130 bd06                      	OUT		TCNT0, R16
+0001a1 e000                      	LDI		R16, 0x00				// Configuración Modo Normal
+0001a2 bd04                      	OUT		TCCR0A, R16
+0001a3 e002                      	LDI		R16, (1 << CS01)		// Prescaler = 8
+0001a4 bd05                      	OUT		TCCR0B, R16
+0001a5 e803                      	LDI		R16, T0VALUE			// Valor inicial del Timer0
+0001a6 bd06                      	OUT		TCNT0, R16
                                  
                                  	// INICIA TIMER 1
-000131 e000                      	LDI		R16, 0x00				// Configuración Modo Normal
-000132 9300 0080                 	STS		TCCR1A, R16
-000134 e002                      	LDI		R16, (1 << CS11)		// Prescaler = 8
-000135 9300 0081                 	STS		TCCR1B, R16
-000137 e00b                      	LDI		R16, T1VALUEH			// Valor inicial del Timer1
-000138 ed1c                      	LDI		R17, T1VALUEL			// Valor inicial del Timer1
-000139 9300 0085                 	STS		TCNT1H, R16
-00013b 9310 0084                 	STS		TCNT1L, R17
+0001a7 e000                      	LDI		R16, 0x00				// Configuración Modo Normal
+0001a8 9300 0080                 	STS		TCCR1A, R16
+0001aa e002                      	LDI		R16, (1 << CS11)		// Prescaler = 8
+0001ab 9300 0081                 	STS		TCCR1B, R16
+0001ad e00b                      	LDI		R16, T1VALUEH			// Valor inicial del Timer1
+0001ae ed1c                      	LDI		R17, T1VALUEL			// Valor inicial del Timer1
+0001af 9300 0085                 	STS		TCNT1H, R16
+0001b1 9310 0084                 	STS		TCNT1L, R17
                                  	
                                  	// HABILITAR INTERRUPCIONES POR OVERFLOW
-00013d e001                      	LDI		R16, (1 << TOIE0)			// Timer/counter0
-00013e 9300 006e                 	STS		TIMSK0, R16
+0001b3 e001                      	LDI		R16, (1 << TOIE0)			// Timer/counter0
+0001b4 9300 006e                 	STS		TIMSK0, R16
                                  
-000140 e001                      	LDI		R16, (1 << TOIE1)			// Timer/counter1
-000141 9300 006f                 	STS		TIMSK1, R16
-                                 
+0001b6 e001                      	LDI		R16, (1 << TOIE1)			// Timer/counter1
+0001b7 9300 006f                 	STS		TIMSK1, R16
 
 
 RESOURCE USE INFORMATION
@@ -1438,39 +1556,39 @@ counted separately from r26..r31 here.
 .dseg memory usage only counts static data declared with .byte
 
 "ATmega328P" register use summary:
-x  :   0 y  :   0 z  :   2 r0 :   0 r1 :   0 r2 :   7 r3 :   3 r4 :   0 
-r5 :   9 r6 :   2 r7 :   2 r8 :   4 r9 :   3 r10:   3 r11:   0 r12:   0 
-r13:   0 r14:   0 r15:   0 r16: 108 r17:   8 r18:   9 r19:   4 r20:  12 
-r21:  13 r22:   6 r23:   0 r24:   0 r25:   0 r26:   0 r27:   0 r28:   0 
+x  :   0 y  :   0 z  :   2 r0 :   0 r1 :   0 r2 :   7 r3 :   5 r4 :   0 
+r5 :   9 r6 :   4 r7 :   2 r8 :   4 r9 :   3 r10:   3 r11:   0 r12:   0 
+r13:   0 r14:   0 r15:   0 r16: 138 r17:  14 r18:  24 r19:   4 r20:  12 
+r21:  17 r22:  12 r23:   0 r24:   0 r25:   0 r26:   0 r27:   0 r28:   0 
 r29:   0 r30:   4 r31:   2 
 Registers used: 18 out of 35 (51.4%)
 
 "ATmega328P" instruction use summary:
 .lds  :   0 .sts  :   0 adc   :   0 add   :   3 adiw  :   0 and   :   1 
 andi  :   0 asr   :   0 bclr  :   0 bld   :   0 brbc  :   0 brbs  :   0 
-brcc  :   0 brcs  :   0 break :   0 breq  :   5 brge  :   0 brhc  :   0 
+brcc  :   0 brcs  :   0 break :   0 breq  :  19 brge  :   0 brhc  :   0 
 brhs  :   0 brid  :   0 brie  :   0 brlo  :   0 brlt  :   0 brmi  :   0 
-brne  :  10 brpl  :   0 brsh  :   0 brtc  :   0 brts  :   0 brvc  :   0 
-brvs  :   0 bset  :   0 bst   :   0 call  :   6 cbi   :   0 cbr   :   2 
+brne  :  15 brpl  :   0 brsh  :   0 brtc  :   0 brts  :   0 brvc  :   0 
+brvs  :   0 bset  :   0 bst   :   0 call  :  10 cbi   :   0 cbr   :   4 
 clc   :   0 clh   :   0 cli   :   1 cln   :   0 clr   :   9 cls   :   0 
 clt   :   0 clv   :   0 clz   :   0 com   :   0 cp    :   1 cpc   :   0 
-cpi   :  14 cpse  :   0 dec   :   0 eor   :   1 fmul  :   0 fmuls :   0 
-fmulsu:   0 icall :   0 ijmp  :   0 in    :   7 inc   :   9 jmp   :   0 
-ld    :   0 ldd   :   0 ldi   :  39 lds   :  14 lpm   :   4 lsl   :   2 
-lsr   :   1 mov   :   4 movw  :   0 mul   :   0 muls  :   0 mulsu :   0 
-neg   :   0 nop   :   0 or    :   1 ori   :   0 out   :  17 pop   :   6 
-push  :   6 rcall :   0 ret   :   8 reti  :   3 rjmp  :  12 rol   :   0 
+cpi   :  34 cpse  :   0 dec   :   4 eor   :   1 fmul  :   0 fmuls :   0 
+fmulsu:   0 icall :   0 ijmp  :   0 in    :   7 inc   :   9 jmp   :   1 
+ld    :   0 ldd   :   0 ldi   :  46 lds   :  18 lpm   :   4 lsl   :   2 
+lsr   :   1 mov   :   6 movw  :   0 mul   :   0 muls  :   0 mulsu :   0 
+neg   :   0 nop   :   0 or    :   1 ori   :   0 out   :  17 pop   :   9 
+push  :   9 rcall :   0 ret   :  21 reti  :   3 rjmp  :  12 rol   :   0 
 ror   :   0 sbc   :   0 sbci  :   0 sbi   :   0 sbic  :   0 sbis  :   0 
-sbiw  :   0 sbr   :   2 sbrc  :  12 sbrs  :   2 sec   :   0 seh   :   0 
+sbiw  :   0 sbr   :   4 sbrc  :  16 sbrs  :   5 sec   :   0 seh   :   0 
 sei   :   1 sen   :   0 ser   :   0 ses   :   0 set   :   0 sev   :   0 
-sez   :   0 sleep :   0 spm   :   0 st    :   0 std   :   0 sts   :  31 
+sez   :   0 sleep :   0 spm   :   0 st    :   0 std   :   0 sts   :  40 
 sub   :   1 subi  :   0 swap  :   0 tst   :   0 wdr   :   0 
-Instructions used: 32 out of 113 (28.3%)
+Instructions used: 34 out of 113 (30.1%)
 
 "ATmega328P" memory use summary [bytes]:
 Segment   Begin    End      Code   Data   Used    Size   Use%
 ---------------------------------------------------------------
-[.cseg] 0x000000 0x000288    568     22    590   32768   1.8%
+[.cseg] 0x000000 0x000374    804     22    826   32768   2.5%
 [.dseg] 0x000100 0x000108      0      8      8    2048   0.4%
 [.eseg] 0x000000 0x000000      0      0      0    1024   0.0%
 

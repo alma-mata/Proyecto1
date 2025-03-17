@@ -87,11 +87,6 @@ SETUP:
 	CALL	INICIO_TIMERS
 
 	// CONFIGURACIÓN DE ENTRADAS Y SALIDAS
-	// Configuración PORT C como entrada con pull-up habilitado
-	LDI		R16, 0xF0
-	OUT		DDRC, R16				// Activa al PORTC como entrada
-	LDI		R16, 0x0F
-	OUT		PORTC, R16				// Habilita pull-ups
 	// Configuración PORT B como salida inicialmente apagada
 	LDI		R16, 0xFF
 	OUT		DDRB, R16				// Activa los 4 bits menos significativos como salidas
@@ -102,10 +97,15 @@ SETUP:
 	OUT		DDRD, R16				// Activa los bits como salida
 	LDI		R16, 0x02
 	OUT		PORTD, R16				// Muestra "0" en el display
+	// Configuración PORT C como entrada con pull-up habilitado
+	LDI		R16, 0xF0
+	OUT		DDRC, R16				// Activa al PORTC como entrada
+	LDI		R16, 0x0F
+	OUT		PORTC, R16				// Habilita pull-ups
 	// CONFIGURACION DE INTERRUPCIONES en los puertos
 	LDI		R16, (1 << PCIE1)
     STS		PCICR, R16				// Habilita interrupciones en PORTC
-    LDI		R16, 0x0F
+    LDI		R16, (1 << PCINT11) | (1 << PCINT10) | (1 << PCINT9) | (1 << PCINT8)
     STS		PCMSK1, R16				// Habilita interrupciones en PC0 y PC1
 
 	//Inicializacion de variables
@@ -135,28 +135,89 @@ MAIN:
 	CALL	INC_HORA
 	SBRC	bandera_ACCION, 1
 	CALL	CAMBIO_DIA
+	SBRC	bandera_ACCION, 2
+	CALL	INCREMENTO
+	SBRC	bandera_ACCION, 3
+	CALL	DECREMENTO
 	RJMP	MAIN
 
 //****************************************
 //			SUB-RUTINAS GENERALES
 //****************************************
+
+DECREMENTO:
+	CBR		bandera_ACCION, 0b00001000
+	CPI		estado, 0b00000100
+	BREQ	DECREMENTO_MINUTOS
+	CPI		estado, 0b00001000
+	BREQ	DECREMENTO_HORAS
+	RET
+
+DECREMENTO_MINUTOS:
+	LDS		variable1, minu_U
+	CPI		variable1, 0x00
+	BRNE	SAVE_DEC_MINU
+	LDI		variable1, 0x09
+	STS		minu_U, variable1
+	LDS		variable1, minu_D
+	CPI		variable1, 0x00
+	BRNE	SAVE_DEC_MIND
+	LDI		variable1, 0x05
+	STS		minu_D, variable1
+	RET
+	SAVE_DEC_MINU:
+		DEC		variable1
+		STS		minu_U, variable1
+		RET
+	SAVE_DEC_MIND:
+		DEC		variable1
+		STS		minu_D, variable1
+		RET
+
+DECREMENTO_HORAS:
+	LDS		variable1, hour_U
+	CPI		variable1, 0x00
+	BRNE	SAVE_DEC_HOURU
+	LDI		variable1, 0x09
+	STS		hour_U, variable1
+	LDS		variable1, hour_D
+	CPI		variable1, 0x00
+	BRNE	SAVE_DEC_HOURD
+	LDI		variable1, 0x02
+	STS		hour_D, variable1
+	LDI		variable1, 0x03
+	STS		hour_U, variable1
+	RET
+	SAVE_DEC_HOURU:
+		DEC		variable1
+		STS		hour_U, variable1
+		RET
+	SAVE_DEC_HOURD:
+		DEC		variable1
+		STS		hour_D, variable1
+		RET
+
+// ---------------- LOGICA DE HORA ----------------
 INC_HORA:
 	CBR		bandera_ACCION, 1
 
+	AUMENTO_MINUTOS:
 	LDS		variable1, minu_U
 	INC		variable1
 	CPI		variable1, 0x0A
 	BRNE	GUARDAR_MINU_U
 	CLR		variable1
 	STS		minu_U, variable1
-
 	LDS		variable1, minu_D
 	INC		variable1
 	CPI		variable1, 0x06
 	BRNE	GUARDAR_MINU_D
 	CLR		variable1
 	STS		minu_D, variable1
-
+	CPI		estado, 0b00000100
+	BRNE	AUMENTO_HORA
+	RET
+	AUMENTO_HORA:
 	LDS		variable1, hour_U
 	LDS		variable2, hour_D
 	INC		variable1
@@ -168,8 +229,9 @@ INC_HORA:
 	CLR		variable2
 	STS		hour_U, variable1
 	STS		hour_D, variable2
+	SBRS	estado, 3
 	SBR		bandera_ACCION, 0b00000010	// Bandera que activa el cambio de dia
-	RJMP	FIN_INC_HORA
+	RET
 	CONTINUAR_INC_HORA:
 		CPI		variable1, 0x0A
 		BRNE	GUARDAR_HOUR
@@ -178,16 +240,29 @@ INC_HORA:
 		GUARDAR_HOUR:
 			STS		hour_U, variable1
 			STS		hour_D, variable2
-			RJMP	FIN_INC_HORA
+			RET
 	GUARDAR_MINU_U:
 		STS		minu_U, variable1
-		RJMP	FIN_INC_HORA
+		RET
 	GUARDAR_MINU_D:
 		STS		minu_D, variable1
-		RJMP	FIN_INC_HORA
-FIN_INC_HORA:	
+		RET
+
+INCREMENTO:
+	CBR		bandera_ACCION, 0b00000100
+	CPI		estado, 0b00000100
+	BREQ	AUMENTO_MINUTOS
+	CPI		estado, 0b00001000
+	BREQ	AUMENTO_HORA
+	CPI		estado, 0b00010000
+	BREQ	AUMENTO_ALARMA
 	RET
 
+
+AUMENTO_ALARMA:
+	RET
+
+// ---------------- LOGICA DE FECHA ----------------
 CAMBIO_DIA:
 	CBR		bandera_ACCION, 2
 
@@ -245,6 +320,7 @@ NUEVO_MES:
 		STS		mes_U, contador_mes
 		RET
 
+// ---------------- LOGICA DE SALIDAS ----------------
 MOSTRAR_HORA: 
 	SBRC	out_PORTB, 0				// Escoge salida de unidades o decenas
 	LDS		CONTADOR7, minu_U			// Copia valor en la salida del contador
@@ -254,7 +330,6 @@ MOSTRAR_HORA:
 	LDS		CONTADOR7, hour_U
 	SBRC	out_PORTB, 3
 	LDS		CONTADOR7, hour_D
-
 	RET
 
 MOSTRAR_FECHA: 
@@ -266,7 +341,6 @@ MOSTRAR_FECHA:
 	LDS		CONTADOR7, dia_U
 	SBRC	out_PORTB, 3
 	LDS		CONTADOR7, dia_D
-
 	RET
 
 //****************************************
@@ -274,10 +348,11 @@ MOSTRAR_FECHA:
 //****************************************
 TIMER0_ISR:
 	PUSH	R16
+	PUSH	R17
 	IN		R16, SREG
 	PUSH	R16
 	
-	IN		out_PORTB, PORTB
+	IN		out_PORTB, PINB
 	LSL		out_PORTB
 	CPI		out_PORTB, 0x10
 	BRNE	SALIDA_PORTD
@@ -290,30 +365,69 @@ SALIDA_PORTD:
 	CALL	MOSTRAR_HORA
 	SBRC	estado, 1
 	CALL	MOSTRAR_FECHA	// Muestra la hora en el display
+	SBRC	estado, 2
+	CALL	MOSTRAR_HORA
+	SBRC	estado, 3
+	CALL	MOSTRAR_HORA	// Muestra la hora en el display
 
 	LDI		ZH, HIGH(Tabla7seg<<1)	// Parte alta de Tabla7seg que esta en la Flash
 	LDI		ZL, LOW(Tabla7seg<<1)	// Parte baja de la tabla
 	ADD		ZL, CONTADOR7			// Suma el contador al puntero Z
 	LPM		SALIDA7, Z				// Copia el valor del puntero
-	OR		out_PORTD, SALIDA7
+	
+	CPI		estado, 0b00000100
+	BREQ	APAGAR_DISPLAY34
+	CPI		estado, 0b00001000
+	BREQ	APAGAR_DISPLAY12
+	CPI		estado, 0b00010000
+	BREQ	APAGAR_DISPLAY34
+	CPI		estado, 0b00100000
+	BREQ	APAGAR_DISPLAY12
+	RJMP	FIN_TIMER0
+	APAGAR_DISPLAY12:
+		CPI		out_PORTB, 0b00000100
+		BREQ	FIN_TIMER0
+		CPI		out_PORTB, 0b00001000
+		BREQ	FIN_TIMER0
+		LDI		R16, 0x7F
+		MOV		SALIDA7, R16
+		RJMP	FIN_TIMER0
+	APAGAR_DISPLAY34:
+		CPI		out_PORTB, 0b00000001
+		BREQ	FIN_TIMER0
+		CPI		out_PORTB, 0b00000010
+		BREQ	FIN_TIMER0
+		LDI		R16, 0x7F
+		MOV		SALIDA7, R16
+		RJMP	FIN_TIMER0
 FIN_TIMER0:
+	OR		out_PORTD, SALIDA7
 	OUT		PORTB, out_PORTB
 	OUT		PORTD, out_PORTD		// Muestra la salida en PORT D
 	POP		R16
 	OUT		SREG, R16
+	POP		R17
 	POP		R16
 
 	RETI
 
 TIMER1_ISR:
 	PUSH	R16
+	PUSH	R17
 	IN		R16, SREG
 	PUSH	R16
 	// Parpadeo de LEDs
 	IN		out_PORTD, PORTD
 	EOR		out_PORTD, puntos_LED
 	OUT		PORTD, out_PORTD
-	// Incremento de HORA
+	
+	CPI		estado, 0b00000001
+	BREQ	INCREMENTO_HORA
+	CPI		estado, 0b00000010
+	BREQ	INCREMENTO_HORA
+	RJMP	FIN_TIMER1
+
+	INCREMENTO_HORA:		// Incremento de HORA
 	INC		ciclo_hora
 	CPI		ciclo_hora, max_ciclosT1
 	BRNE	FIN_TIMER1
@@ -322,38 +436,42 @@ TIMER1_ISR:
 FIN_TIMER1:
 	POP		R16
 	OUT		SREG, R16
+	POP		R17
 	POP		R16
-
 	RETI
 
 PORTC_ISR:
 	PUSH	R16
+	PUSH	R17
 	IN		R16, SREG
 	PUSH	R16
 
 	IN		in_PORTC, PINC
+	SBRS	in_PORTC, 0
+	SBR		bandera_ACCION, 0b00000100
+	SBRS	in_PORTC, 1
+	SBR		bandera_ACCION, 0b00001000
 	SBRS	in_PORTC, 2
 	LSL		estado
 	SBRS	in_PORTC, 3
 	LSR		estado
 
-	CPI		estado, 0x00
+	CPI		estado, 0b00000000
 	BREQ	UNDERFLOW_ESTADO
-	CPI		estado, 0x80
+	CPI		estado, 0b00010000
 	BREQ	OVERFLOW_ESTADO
 	RJMP	FIN_PORTC_ISR
-
 	UNDERFLOW_ESTADO:
-		LDI		estado, 0x40
+		LDI		estado, 0b00001000
 		RJMP	FIN_PORTC_ISR
 	OVERFLOW_ESTADO:
-		LDI		estado, 0x01
+		LDI		estado, 0b00000001
 		RJMP	FIN_PORTC_ISR
 FIN_PORTC_ISR:
 	POP		R16
 	OUT		SREG, R16
+	POP		R17
 	POP		R16
-
 	RETI
 
 INICIO_TIMERS:
@@ -381,5 +499,4 @@ INICIO_TIMERS:
 
 	LDI		R16, (1 << TOIE1)			// Timer/counter1
 	STS		TIMSK1, R16
-
 	RET
