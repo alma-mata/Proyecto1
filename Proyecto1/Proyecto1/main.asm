@@ -119,6 +119,10 @@ SETUP:
 	STS		minu_D, R16
 	STS		hour_U, R16
 	STS		hour_D, R16
+	STS		dia_U, R16
+	STS		dia_D, R16
+	STS		mes_U, R16
+	STS		mes_D, R16
 	LDI		estado, 0x01
 	LDI		contador_mes, 0x00
 	LDI		R16, 0x01
@@ -144,15 +148,6 @@ MAIN:
 //****************************************
 //			SUB-RUTINAS GENERALES
 //****************************************
-
-DECREMENTO:
-	CBR		bandera_ACCION, 0b00001000
-	CPI		estado, 0b00000100
-	BREQ	DECREMENTO_MINUTOS
-	CPI		estado, 0b00001000
-	BREQ	DECREMENTO_HORAS
-	RET
-
 DECREMENTO_MINUTOS:
 	LDS		variable1, minu_U
 	CPI		variable1, 0x00
@@ -197,6 +192,102 @@ DECREMENTO_HORAS:
 		STS		hour_D, variable1
 		RET
 
+DECREMENTO:
+	CBR		bandera_ACCION, 0b00001000
+	CPI		estado, 0b00000100
+	BREQ	DECREMENTO_MINUTOS
+	CPI		estado, 0b00001000
+	BREQ	DECREMENTO_HORAS
+	CPI		estado, 0b00010000
+	BREQ	DECREMENTO_MES
+	CPI		estado, 0b00100000
+	BREQ	DECREMENTO_DIAS
+	RET
+
+DECREMENTO_DIAS:
+	MOV		variable1, contador_dia
+	CPI		variable1, 0x01
+	BREQ	UNDERFLOW_DIA
+	DEC		contador_dia
+
+	LDS		variable1, dia_U
+	CPI		variable1, 0x00
+	BRNE	SAVE_DEC_DIAU
+	LDI		variable1, 0x09
+	STS		dia_U, variable1
+	LDS		variable1, dia_D
+	DEC		variable1
+	STS		dia_D, variable1
+	RET
+	SAVE_DEC_DIAU:
+		DEC		variable1
+		STS		dia_U, variable1
+		RET
+	UNDERFLOW_DIA:
+		MOV		contador_dia, max_dia
+		MOV		variable1, max_dia
+		CPI		variable1, 0x1F		// Mes de 31 dia
+		BREQ	REINICIO_31DIAS
+		CPI		variable1, 0x1E		// Mes de 30 dia
+		BREQ	REINICIO_30DIAS
+		CPI		variable1, 0x1C		// Mes de 28 dia
+		BREQ	REINICIO_28DIAS
+	REINICIO_31DIAS:
+		LDI		variable1, 0x01
+		STS		dia_U, variable1
+		LDI		variable1, 0x03
+		STS		dia_D, variable1
+		RET
+	REINICIO_30DIAS:
+		LDI		variable1, 0x00
+		STS		dia_U, variable1
+		LDI		variable1, 0x03
+		STS		dia_D, variable1
+		RET
+	REINICIO_28DIAS:
+		LDI		variable1, 0x08
+		STS		dia_U, variable1
+		LDI		variable1, 0x02
+		STS		dia_D, variable1
+		RET
+
+DECREMENTO_MES:
+	LDI		R16, 0x01			// Reinicio de inicio de mes
+	MOV		contador_dia, R16
+	LDI		variable1, 0x01
+	STS		dia_U, variable1
+	LDI		variable1, 0x00
+	STS		dia_D, variable1
+
+	LDS		variable1, mes_U
+	CPI		variable1, 0x01
+	BRNE	CONTINUAR_DECREMENTO_MES
+	LDS		variable2, mes_D
+	CPI		variable2, 0x00
+	BRNE	CONTINUAR_DECREMENTO_MES
+	LDI		contador_mes, 0x0C
+	LDI		variable1, 0x03
+	LDI		variable2, 0x01
+	STS		mes_D, variable2
+	CONTINUAR_DECREMENTO_MES:
+		CPI		contador_mes, 0x09
+		BRNE	DEC_MES_U
+		LDI		variable1, 0x09
+		STS		mes_U, variable1
+		LDI		variable1, 0x00
+		STS		mes_D, variable1
+		RJMP	MAXIMO_DIAS
+	DEC_MES_U:
+		DEC		variable1
+		STS		mes_U, variable1
+		RJMP	MAXIMO_DIAS
+	MAXIMO_DIAS:
+		DEC		contador_mes
+		LDI		ZH, HIGH(Tabla_maxDIAS<<1)	// Parte alta de Tabla7seg que esta en la Flash
+		LDI		ZL, LOW(Tabla_maxDIAS<<1)	// Parte baja de la tabla
+		ADD		ZL, contador_mes			// Suma el contador al puntero Z
+		LPM		max_dia, Z					// Copia el valor del puntero
+		RET
 // ---------------- LOGICA DE HORA ----------------
 INC_HORA:
 	CBR		bandera_ACCION, 1
@@ -255,9 +346,12 @@ INCREMENTO:
 	CPI		estado, 0b00001000
 	BREQ	AUMENTO_HORA
 	CPI		estado, 0b00010000
+	BREQ	NUEVO_MES
+	CPI		estado, 0b00100000
+	BREQ	AUMENTO_DIA
+	CPI		estado, 0b01000000
 	BREQ	AUMENTO_ALARMA
 	RET
-
 
 AUMENTO_ALARMA:
 	RET
@@ -265,7 +359,7 @@ AUMENTO_ALARMA:
 // ---------------- LOGICA DE FECHA ----------------
 CAMBIO_DIA:
 	CBR		bandera_ACCION, 2
-
+	AUMENTO_DIA:
 	CP		contador_dia, max_dia
 	BREQ	NUEVO_MES
 	INC		contador_dia
@@ -284,40 +378,42 @@ CAMBIO_DIA:
 		STS		dia_U, variable1
 		RET
 NUEVO_MES:
+	// Reinicio de inicio de mes
 	LDI		R16, 0x01
 	MOV		contador_dia, R16
 	LDI		variable1, 0x01
 	STS		dia_U, variable1
 	LDI		variable1, 0x00
 	STS		dia_D, variable1
+	SBRC	estado, 5
+	RET
 
-	CPI		contador_mes, 0x0C
-	BRNE	CONTINUAR_NUEVO_MES
-	CLR		contador_mes
-	CONTINUAR_NUEVO_MES:
 	LDI		ZH, HIGH(Tabla_maxDIAS<<1)	// Parte alta de Tabla7seg que esta en la Flash
 	LDI		ZL, LOW(Tabla_maxDIAS<<1)	// Parte baja de la tabla
 	ADD		ZL, contador_mes			// Suma el contador al puntero Z
 	LPM		max_dia, Z					// Copia el valor del puntero
-
 	INC		contador_mes
-	CPI		contador_mes, 0x0A
-	BREQ	GUARDAR_MES_D
-	CPI		contador_mes, 0x0B
-	BREQ	GUARDAR_MES_D
-	CPI		contador_mes, 0x0C
-	BRNE	GUARDAR_MES_U
-	GUARDAR_MES_D:
+
+	LDS		variable1, mes_U
+	CPI		variable1, 0x02
+	BRNE	CONTINUAR_GUARDADO_MES
+	LDS		variable2, mes_D
+	CPI		variable2, 0x01
+	BRNE	CONTINUAR_GUARDADO_MES
+	LDI		variable1, 0x00
+	STS		mes_D, variable1
+	CLR		contador_mes
+	CONTINUAR_GUARDADO_MES:
+		CPI		contador_mes, 0x09
+		BRNE	GUARDAR_MES_U
+		LDI		variable1, 0x00
+		STS		mes_U, variable1
 		LDI		variable1, 0x01
-		STS		mes_D, variable1 
-		SUB 	contador_mes, constante_10
-		STS		mes_U, contador_mes
-		ADD		contador_mes, constante_10
+		STS		mes_D, variable1
 		RET
 	GUARDAR_MES_U:
-		LDI		variable1, 0x00
-		STS		mes_D, variable1
-		STS		mes_U, contador_mes
+		INC		variable1
+		STS		mes_U, variable1
 		RET
 
 // ---------------- LOGICA DE SALIDAS ----------------
@@ -364,11 +460,15 @@ SALIDA_PORTD:
 	SBRC	estado, 0
 	CALL	MOSTRAR_HORA
 	SBRC	estado, 1
-	CALL	MOSTRAR_FECHA	// Muestra la hora en el display
+	CALL	MOSTRAR_FECHA	// Muestra la Fecha en el display
 	SBRC	estado, 2
 	CALL	MOSTRAR_HORA
 	SBRC	estado, 3
 	CALL	MOSTRAR_HORA	// Muestra la hora en el display
+	SBRC	estado, 4
+	CALL	MOSTRAR_FECHA
+	SBRC	estado, 5
+	CALL	MOSTRAR_FECHA	// Muestra la hora en el display
 
 	LDI		ZH, HIGH(Tabla7seg<<1)	// Parte alta de Tabla7seg que esta en la Flash
 	LDI		ZL, LOW(Tabla7seg<<1)	// Parte baja de la tabla
@@ -458,11 +558,11 @@ PORTC_ISR:
 
 	CPI		estado, 0b00000000
 	BREQ	UNDERFLOW_ESTADO
-	CPI		estado, 0b00010000
+	CPI		estado, 0b01000000
 	BREQ	OVERFLOW_ESTADO
 	RJMP	FIN_PORTC_ISR
 	UNDERFLOW_ESTADO:
-		LDI		estado, 0b00001000
+		LDI		estado, 0b00100000
 		RJMP	FIN_PORTC_ISR
 	OVERFLOW_ESTADO:
 		LDI		estado, 0b00000001
