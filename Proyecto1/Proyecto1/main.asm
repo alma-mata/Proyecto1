@@ -146,16 +146,16 @@ SETUP:
 //				LOOP INFINITO
 //****************************************
 MAIN:
-	CALL	SIGN_ESTADO
-	SBRC	bandera_ACCION, 0
+	CALL	SIGN_ESTADO			// Enciende el LED de modo
+	SBRC	bandera_ACCION, 0	// Incremento automático de reloj
 	CALL	INC_HORA
-	SBRC	bandera_ACCION, 1
+	SBRC	bandera_ACCION, 1	// Cambio automático de día
 	CALL	CAMBIO_DIA
-	SBRC	bandera_ACCION, 2
+	SBRC	bandera_ACCION, 2	// Botón incremento activado
 	CALL	INCREMENTO
-	SBRC	bandera_ACCION, 3
+	SBRC	bandera_ACCION, 3	// Botón decremento activado
 	CALL	DECREMENTO
-	SBRC	bandera_ACCION, 5
+	SBRC	bandera_ACCION, 5	// Bandera para comparar alarma
 	CALL	comparar_ALARMA
 	RJMP	MAIN
 
@@ -163,7 +163,7 @@ MAIN:
 //			SUB-RUTINAS GENERALES
 //****************************************
 SIGN_ESTADO:
-	SBRC	estado, 0
+	SBRC	estado, 0		// Se verifica en que modo se esta
 	RJMP	estado_RELOJ
 	SBRC	estado, 1
 	RJMP	estado_FECHA
@@ -182,112 +182,112 @@ SIGN_ESTADO:
 	CPI		estado, 0x00
 	BREQ	estado_ALARMA_activa
 	estado_RELOJ:
-		SBI		PORTC, 4
+		SBI		PORTC, 4		// Enciendo PC4 y apaga PC5 y PB5
 		CBI		PORTC, 5
 		CLR		out_ALARMA
 		RET
 	estado_FECHA:
-		CBI		PORTC, 4
+		CBI		PORTC, 4		// Enciendo PC5 y apaga PC4 y PB5
 		SBI		PORTC, 5
 		CLR		out_ALARMA
 		RET
 	estado_ALARMA:
-		CBI		PORTC, 4
+		CBI		PORTC, 4		// Enciendo PB5 y apaga PC4 y PC5
 		CBI		PORTC, 5
 		LDI		out_ALARMA, 0b00100000
 		RET
-	estado_ALARMA_activa:
+	estado_ALARMA_activa:  // Se enciende PB4 que es el buzzer
 		CBI		PORTC, 4
 		CBI		PORTC, 5
-		LDI		out_ALARMA, 0b00110000
+		LDI		out_ALARMA, 0b00110000	// Enciendo PB5 y apaga PC4 y PC5
 		RET
 // ---------------- LOGICA DE DECREMENTO ----------------
 DECREMENTO_MINUTOS:
 	LDS		variable1, minu_U
-	CPI		variable1, 0x00
-	BRNE	SAVE_DEC_MINU
-	LDI		variable1, 0x09
-	STS		minu_U, variable1
+	CPI		variable1, 0x00		// Antes de decrementar, se verifica si es 0
+	BRNE	SAVE_DEC_MINU		// Si no es 0 guarda el valor
+	LDI		variable1, 0x09		// Si es 0, carga 9 en unidad
+	STS		minu_U, variable1 
 	LDS		variable1, minu_D
-	CPI		variable1, 0x00
-	BRNE	SAVE_DEC_MIND
-	LDI		variable1, 0x05
+	CPI		variable1, 0x00		// Verifica si decena es 0
+	BRNE	SAVE_DEC_MIND		// Si no, salta a guardar la decena
+	LDI		variable1, 0x05		// Si es 0, carga 5 a decena
 	STS		minu_D, variable1
 	RET
 	SAVE_DEC_MINU:
-		DEC		variable1
+		DEC		variable1		// Decrementa y guarda
 		STS		minu_U, variable1
 		RET
 	SAVE_DEC_MIND:
-		DEC		variable1
+		DEC		variable1		// Decrementa y guarda
 		STS		minu_D, variable1
 		RET
 
 DECREMENTO_HORAS:
 	LDS		variable1, hour_U
-	CPI		variable1, 0x00
-	BRNE	SAVE_DEC_HOURU
-	LDI		variable1, 0x09
+	CPI		variable1, 0x00			// Verifica si unidad es 0
+	BRNE	SAVE_DEC_HOURU			// Si no es, salta a guardar unidad
+	LDI		variable1, 0x09			// Si es 0, carga 9 a unidad
 	STS		hour_U, variable1
 	LDS		variable1, hour_D
-	CPI		variable1, 0x00
-	BRNE	SAVE_DEC_HOURD
-	LDI		variable1, 0x02
+	CPI		variable1, 0x00			// Verifica si decena es 0
+	BRNE	SAVE_DEC_HOURD			// Si no es, salta a guardar decena
+	LDI		variable1, 0x02			// Si es 0, guarda 2 en decena y 3 en unidad
 	STS		hour_D, variable1
 	LDI		variable1, 0x03
 	STS		hour_U, variable1
 	RET
 	SAVE_DEC_HOURU:
-		DEC		variable1
+		DEC		variable1		// Decrementa y guarda
 		STS		hour_U, variable1
 		RET
 	SAVE_DEC_HOURD:
-		DEC		variable1
+		DEC		variable1		// Decrementa y guarda
 		STS		hour_D, variable1
 		RET
 
-DECREMENTO:
-	CBR		bandera_ACCION, 0b00001000
-	CPI		estado, 0b00000100
-	BREQ	DECREMENTO_MINUTOS
-	CPI		estado, 0b00001000
+DECREMENTO:		// Segun el estado, llama al bloque correspondiente
+	CBR		bandera_ACCION, 0b00001000	// Apaga bandera decremento
+	CPI		estado, 0b00000100			// Si estado es conf_minutos
+	BREQ	DECREMENTO_MINUTOS	
+	CPI		estado, 0b00001000			// Si estado es conf_horas
 	BREQ	DECREMENTO_HORAS
-	CPI		estado, 0b00010000
+	CPI		estado, 0b00010000			// Si estado es conf_mes
 	BREQ	DECREMENTO_MES
-	CPI		estado, 0b00100000
+	CPI		estado, 0b00100000			// Si estado es conf_dia
 	BREQ	DECREMENTO_DIAS
-	CPI		estado, 0b01000000
+	CPI		estado, 0b01000000			// Si estado es conf_alarma minutos
 	BREQ	DEC_ALARMA_MIN
-	CPI		estado, 0b10000000
+	CPI		estado, 0b10000000			// Si estado es conf_alarma hora
 	BREQ	DEC_ALARMA_HOUR
 	RET
 
-DEC_ALARMA_MIN:
+DEC_ALARMA_MIN:		// Salto a bloque (quedaban muy lejos)
 	RJMP	DECREMENTO_ALARMA_MIN
-DEC_ALARMA_HOUR:
+DEC_ALARMA_HOUR:	// Salto a bloque (quedaban muy lejos)
 	RJMP	DECREMENTO_ALARMA_HOUR
 
 DECREMENTO_DIAS:
-	MOV		variable1, contador_dia
-	CPI		variable1, 0x01
-	BREQ	UNDERFLOW_DIA
-	DEC		contador_dia
+	MOV		variable1, contador_dia		// Copia contador_dia para usar CPI
+	CPI		variable1, 0x01				// Verifica se contador_dia es 1
+	BREQ	UNDERFLOW_DIA				// Si es así, hace underflow
+	DEC		contador_dia				// De lo contrario, disminuye dia
 
 	LDS		variable1, dia_U
-	CPI		variable1, 0x00
-	BRNE	SAVE_DEC_DIAU
-	LDI		variable1, 0x09
+	CPI		variable1, 0x00			// Verifica si la unidad es 0
+	BRNE	SAVE_DEC_DIAU			// Si no es, guarda unidad
+	LDI		variable1, 0x09			// Si es 0, guarda 9
 	STS		dia_U, variable1
 	LDS		variable1, dia_D
-	DEC		variable1
+	DEC		variable1			// Decrementa decena y guarda
 	STS		dia_D, variable1
 	RET
 	SAVE_DEC_DIAU:
-		DEC		variable1
+		DEC		variable1		// Decrementa unidad y guarda
 		STS		dia_U, variable1
 		RET
-	UNDERFLOW_DIA:
-		MOV		contador_dia, max_dia
+	UNDERFLOW_DIA: // Dependiendo del max_dia se escoge el bloque
+		MOV		contador_dia, max_dia // Copia max_dia en contador_dia
 		MOV		variable1, max_dia
 		CPI		variable1, 0x1F		// Mes de 31 dia
 		BREQ	REINICIO_31DIAS
@@ -295,19 +295,19 @@ DECREMENTO_DIAS:
 		BREQ	REINICIO_30DIAS
 		CPI		variable1, 0x1C		// Mes de 28 dia
 		BREQ	REINICIO_28DIAS
-	REINICIO_31DIAS:
+	REINICIO_31DIAS:  // Carga 3 y 1 a decena y unidad, y guarda
 		LDI		variable1, 0x01
 		STS		dia_U, variable1
 		LDI		variable1, 0x03
 		STS		dia_D, variable1
 		RET
-	REINICIO_30DIAS:
+	REINICIO_30DIAS:	// Carga 3 y 0 a decena y unidad, y guarda
 		LDI		variable1, 0x00
 		STS		dia_U, variable1
 		LDI		variable1, 0x03
 		STS		dia_D, variable1
 		RET
-	REINICIO_28DIAS:
+	REINICIO_28DIAS:	// Carga 2 y 8 a decena y unidad, y guarda
 		LDI		variable1, 0x08
 		STS		dia_U, variable1
 		LDI		variable1, 0x02
@@ -346,7 +346,7 @@ DECREMENTO_MES:
 		RJMP	MAXIMO_DIAS
 	MAXIMO_DIAS:
 		DEC		contador_mes
-		LDI		ZH, HIGH(Tabla_maxDIAS<<1)	// Parte alta de Tabla7seg que esta en la Flash
+		LDI		ZH, HIGH(Tabla_maxDIAS<<1)	// Parte alta de Tabla_maxDIAS que esta en la Flash
 		LDI		ZL, LOW(Tabla_maxDIAS<<1)	// Parte baja de la tabla
 		ADD		ZL, contador_mes			// Suma el contador al puntero Z
 		LPM		max_dia, Z					// Copia el valor del puntero
@@ -404,18 +404,18 @@ INC_HORA:
 		RET
 
 INCREMENTO:
-	CBR		bandera_ACCION, 0b00000100
-	CPI		estado, 0b00000100
+	CBR		bandera_ACCION, 0b00000100 // Limpia bandera de incremento
+	CPI		estado, 0b00000100		// Estado configuracion minutos
 	BREQ	AUMENTO_MINUTOS
-	CPI		estado, 0b00001000
+	CPI		estado, 0b00001000		// Estado configuracion horas
 	BREQ	AUMENTO_HORA
-	CPI		estado, 0b00010000
+	CPI		estado, 0b00010000		// Estado configuracion mes
 	BREQ	NUEVO_MES
-	CPI		estado, 0b00100000
+	CPI		estado, 0b00100000		// Estado configuracion dia
 	BREQ	AUMENTO_DIA
-	CPI		estado, 0b01000000
+	CPI		estado, 0b01000000		// Estado configuracion minutos alarma
 	BREQ	INC_ALARMA_MIN
-	CPI		estado, 0b10000000
+	CPI		estado, 0b10000000		// Estado configuracion horas alarma
 	BREQ	INC_ALARMA_HOUR
 	RET
 
@@ -428,16 +428,16 @@ INC_ALARMA_HOUR:
 CAMBIO_DIA:
 	CBR		bandera_ACCION, 0b00000010
 	AUMENTO_DIA:
-	CP		contador_dia, max_dia
-	BREQ	NUEVO_MES
+	CP		contador_dia, max_dia	// Compara si llego al maximo de dias
+	BREQ	NUEVO_MES				// Si es así, cambia de mes
 	INC		contador_dia
 
-	LDS		variable1, dia_U
+	LDS		variable1, dia_U	// Incrementa unidades
 	INC		variable1
-	CPI		variable1, 0x0A
-	BRNE	GUARDAR_DIA_U
+	CPI		variable1, 0x0A		// Verifica si llegan a 10
+	BRNE	GUARDAR_DIA_U		// Si no, solo guarda el valor
 	CLR		variable1
-	STS		dia_U, variable1
+	STS		dia_U, variable1	// Si sí, carga 0 a unidades e incrementa decenas
 	LDS		variable1, dia_D
 	INC		variable1
 	STS		dia_D, variable1
@@ -453,27 +453,27 @@ NUEVO_MES:
 	STS		dia_U, variable1
 	LDI		variable1, 0x00
 	STS		dia_D, variable1
-	SBRC	estado, 5
+	SBRC	estado, 5		// Si se esta en el estado 5, regresa
 	RET
 
-	INC		contador_mes
-	LDI		ZH, HIGH(Tabla_maxDIAS<<1)	// Parte alta de Tabla7seg que esta en la Flash
+	INC		contador_mes	// Incrementa contador mes
+	LDI		ZH, HIGH(Tabla_maxDIAS<<1)	// Parte alta de Tabla_maxDIAS que esta en la Flash
 	LDI		ZL, LOW(Tabla_maxDIAS<<1)	// Parte baja de la tabla
 	ADD		ZL, contador_mes			// Suma el contador al puntero Z
-	LPM		max_dia, Z					// Copia el valor del puntero
+	LPM		max_dia, Z					// Carga maximo de dias
 	
 	LDS		variable1, mes_U
-	CPI		variable1, 0x02
-	BRNE	CONTINUAR_GUARDADO_MES
-	LDS		variable2, mes_D
+	CPI		variable1, 0x02			// Verifica si unidad es 2
+	BRNE	CONTINUAR_GUARDADO_MES	// Si no, solo continua
+	LDS		variable2, mes_D		// Si si, verifica si decena es 1
 	CPI		variable2, 0x01
-	BRNE	CONTINUAR_GUARDADO_MES
+	BRNE	CONTINUAR_GUARDADO_MES // Si no, continua
 	LDI		variable1, 0x00
-	STS		mes_D, variable1
+	STS		mes_D, variable1	// Si si, hace overflow
 	CLR		contador_mes
 	CONTINUAR_GUARDADO_MES:
-		CPI		contador_mes, 0x09
-		BRNE	GUARDAR_MES_U
+		CPI		contador_mes, 0x09 // Si llega a 10, carga 0 y 1 en unidad y decena
+		BRNE	GUARDAR_MES_U		// Si no, guarda la unidad
 		LDI		variable1, 0x00
 		STS		mes_U, variable1
 		LDI		variable1, 0x01
@@ -485,7 +485,7 @@ NUEVO_MES:
 		RET
 
 // ---------------- LOGICA DE ALARMA ----------------
-AUMENTO_ALARMA_MIN:
+AUMENTO_ALARMA_MIN:		//Misma logica que inc minutos reloj
 	LDS		variable1, Aminu_U
 	INC		variable1
 	CPI		variable1, 0x0A
@@ -505,7 +505,7 @@ AUMENTO_ALARMA_MIN:
 	GUARDAR_AMINU_D:
 		STS		Aminu_D, variable1
 		RET
-AUMENTO_ALARMA_HOUR:
+AUMENTO_ALARMA_HOUR:	//Misma logica que inc horas reloj
 	LDS		variable1, Ahour_U
 	LDS		variable2, Ahour_D
 	INC		variable1
@@ -528,7 +528,7 @@ AUMENTO_ALARMA_HOUR:
 			STS		Ahour_D, variable2
 			RET
 
-DECREMENTO_ALARMA_MIN:
+DECREMENTO_ALARMA_MIN:	//Misma logica que dec minutos reloj
 	LDS		variable1, Aminu_U
 	CPI		variable1, 0x00
 	BRNE	SAVE_DEC_AMINU
@@ -549,7 +549,7 @@ DECREMENTO_ALARMA_MIN:
 		STS		Aminu_D, variable1
 		RET
 
-DECREMENTO_ALARMA_HOUR:
+DECREMENTO_ALARMA_HOUR:  //Misma logica que dec horas reloj
 	LDS		variable1, Ahour_U
 	CPI		variable1, 0x00
 	BRNE	SAVE_DEC_AHOURU
@@ -576,28 +576,28 @@ comparar_ALARMA:
 	CBR		bandera_ACCION, 0b00100000
 	LDS		variable1, minu_U
 	LDS		variable2, Aminu_U
-	CPSE	variable1, variable2
-	RET 
-	LDS		variable1, minu_D
+	CPSE	variable1, variable2	// Verifica si las unidades de minutos coinciden 
+	RET			// De lo contrario regresa
+	LDS		variable1, minu_D		
 	LDS		variable2, Aminu_D
-	CPSE	variable1, variable2
+	CPSE	variable1, variable2	// Verifica si las decenas de minutos coinciden
 	RET
 	LDS		variable1, hour_U
 	LDS		variable2, Ahour_U
-	CPSE	variable1, variable2
+	CPSE	variable1, variable2	// Verifica si las unidades de horas coinciden
 	RET
 	LDS		variable1, hour_D
 	LDS		variable2, Ahour_D
-	CPSE	variable1, variable2
+	CPSE	variable1, variable2	// Verifica si las decenas de horas coinciden
 	RET
-	CLR		variable1
+	CLR		variable1			// Limpia variables de alarma
 	STS		Aminu_U, variable1
 	STS		Aminu_D, variable1
 	STS		Ahour_U, variable1
 	STS		Ahour_D, variable1
-	SBR		out_ALARMA, 0b00010000
-	CBR		bandera_ACCION, 0b00010000
-	CLR		estado
+	SBR		out_ALARMA, 0b00010000	
+	CBR		bandera_ACCION, 0b00010000	// Activa bandera alarma_activada
+	CLR		estado						// Limpia estado para entrar a alarma_activada
 	RET
 
 // ---------------- LOGICA DE SALIDAS ----------------
@@ -642,7 +642,7 @@ TIMER0_ISR:
 	PUSH	R17
 	IN		R16, SREG
 	PUSH	R16
-	
+	// Multiplexado de PORTB
 	IN		out_PORTB, PINB
 	ANDI	out_PORTB, 0x0F
 	LSL		out_PORTB
@@ -654,19 +654,19 @@ SALIDA_PORTD:
 	AND		out_PORTD, puntos_LED
 
 	SBRC	estado, 0
-	CALL	MOSTRAR_HORA
+	CALL	MOSTRAR_HORA	// Muestra la hora en el display
 	SBRC	estado, 1
 	CALL	MOSTRAR_FECHA	// Muestra la Fecha en el display
 	SBRC	estado, 2
-	CALL	MOSTRAR_HORA
+	CALL	MOSTRAR_HORA	// Muestra la hora en el display
 	SBRC	estado, 3
 	CALL	MOSTRAR_HORA	// Muestra la hora en el display
 	SBRC	estado, 4
-	CALL	MOSTRAR_FECHA
+	CALL	MOSTRAR_FECHA	// Muestra la Fecha en el display
 	SBRC	estado, 5
 	CALL	MOSTRAR_FECHA	// Muestra la fecha en el display
 	SBRC	estado, 6
-	CALL	MOSTRAR_ALARMA
+	CALL	MOSTRAR_ALARMA	// Muestra la alarma en el display
 	SBRC	estado, 7
 	CALL	MOSTRAR_ALARMA	// Muestra la alarma en el display
 	CPI		estado, 0x00
@@ -679,11 +679,11 @@ SALIDA_PORTD:
 	LPM		SALIDA7, Z				// Copia el valor del puntero
 	
 	LDI		R16, 0x00
-	CP		bandera_BLINK, R16
+	CP		bandera_BLINK, R16	// Si bandera es 0, Apagar displays
 	BRNE	FIN_TIMER0
-	CPI		estado, 0b00000100
+	CPI		estado, 0b00000100	// En estado 3, 5, 7 parpadena display 1 y 2
 	BREQ	APAGAR_DISPLAY12
-	CPI		estado, 0b00001000
+	CPI		estado, 0b00001000	// En estado 4, 6, 8 parpadena display 3 y 4
 	BREQ	APAGAR_DISPLAY34
 	CPI		estado, 0b00010000
 	BREQ	APAGAR_DISPLAY12
@@ -696,7 +696,7 @@ SALIDA_PORTD:
 	CPI		estado, 0x00
 	BREQ	estado_00
 	RJMP	FIN_TIMER0
-	estado_00:
+	estado_00:	// En estado 0 parpadean todos los DISPLAYS
 		CPI		out_PORTB, 0b00000001
 		BREQ	APAGAR_DISPLAY12
 		CPI		out_PORTB, 0b00000010
@@ -705,20 +705,20 @@ SALIDA_PORTD:
 		BREQ	APAGAR_DISPLAY34
 		CPI		out_PORTB, 0b00001000
 		BREQ	APAGAR_DISPLAY34
-	APAGAR_DISPLAY12:
-		CPI		out_PORTB, 0b00000100
+	APAGAR_DISPLAY12:	// Parpadeo de displays 0 y 1
+		CPI		out_PORTB, 0b00000100	// Verifica que sean PB0 y PB1
 		BREQ	FIN_TIMER0
 		CPI		out_PORTB, 0b00001000
 		BREQ	FIN_TIMER0
-		LDI		R16, 0x7F
+		LDI		R16, 0x7F		// Pone en 1 todos los pines de PORTD
 		MOV		SALIDA7, R16
 		RJMP	FIN_TIMER0
-	APAGAR_DISPLAY34:
-		CPI		out_PORTB, 0b00000001
+	APAGAR_DISPLAY34:	// Parpadeo de display 2 y 3
+		CPI		out_PORTB, 0b00000001 // Verifica que sean PB0 y PB1
 		BREQ	FIN_TIMER0
 		CPI		out_PORTB, 0b00000010
 		BREQ	FIN_TIMER0
-		LDI		R16, 0x7F
+		LDI		R16, 0x7F	// Pone en 1 todos los pines de PORTD
 		MOV		SALIDA7, R16
 		RJMP	FIN_TIMER0
 FIN_TIMER0:
@@ -726,11 +726,11 @@ FIN_TIMER0:
 	OR		out_PORTD, SALIDA7
 	OUT		PORTB, out_PORTB
 	OUT		PORTD, out_PORTD		// Muestra la salida en PORT D
-	INC		ciclos_BLINK
-	CPI		ciclos_BLINK, 100
+	INC		ciclos_BLINK			// Parpadeo de displays
+	CPI		ciclos_BLINK, 100		// Verifica si se cumple el ciclo
 	BRNE	continuar_FIN_TIMER0
 	CLR		ciclos_BLINK
-	EOR		bandera_BLINK, compare_BLINK
+	EOR		bandera_BLINK, compare_BLINK	// Hace XOR para apagar o encender la bandera
 	continuar_FIN_TIMER0:
 	POP		R16
 	OUT		SREG, R16
@@ -749,7 +749,7 @@ TIMER1_ISR:
 	EOR		out_PORTD, puntos_LED
 	OUT		PORTD, out_PORTD
 	
-	CPI		estado, 0x00
+	CPI		estado, 0x00		// Incremento automático para estdo 0, 1, 2, 6 y 7
 	BREQ	INCREMENTO_HORA
 	CPI		estado, 0b00000001
 	BREQ	INCREMENTO_HORA
@@ -762,7 +762,7 @@ TIMER1_ISR:
 	RJMP	FIN_TIMER1
 	INCREMENTO_HORA:		// Incremento de HORA
 	INC		ciclo_hora
-	CPI		ciclo_hora, max_ciclosT1
+	CPI		ciclo_hora, max_ciclosT1		// Verifica si se cumplen los ciclos
 	BRNE	FIN_TIMER1
 	CLR		ciclo_hora
 	SBR		bandera_ACCION, 0b00000001		// Activa el cambio de dia
@@ -781,42 +781,42 @@ PORTC_ISR:
 	IN		R16, SREG
 	PUSH	R16
 
-	IN		in_PORTC, PINC
-	SBRS	in_PORTC, 0
+	IN		in_PORTC, PINC	// Lee PIN C
+	SBRS	in_PORTC, 0		// PC0 es incremento
 	RJMP	INC_DISPLAY
-	SBRS	in_PORTC, 1
+	SBRS	in_PORTC, 1		// PC1 es decremento
 	RJMP	DEC_DISPLAY
-	SBRS	in_PORTC, 2
+	SBRS	in_PORTC, 2		// PC2 es aumento de estado
 	RJMP	INC_ESTADO
-	SBRS	in_PORTC, 3
+	SBRS	in_PORTC, 3		// PC3 es decremento de estado
 	RJMP	DEC_ESTADO
-	RJMP	FIN_PORTC_ISR
+	RJMP	FIN_PORTC_ISR	// Salta al final
 	INC_ESTADO:
-		LSL		estado
-		CPI		estado, 0x00
+		LSL		estado			// corre a la izquierda los bits
+		CPI		estado, 0x00	// si hay overflow, carga 0x01
 		BRNE	FIN_PORTC_ISR
 		LDI		estado, 0b00000001
 		RJMP	FIN_PORTC_ISR
 	DEC_ESTADO:
-		LSR		estado
-		CPI		estado, 0x00
+		LSR		estado			// corre a la derecha los bits
+		CPI		estado, 0x00	// Si hay underflow, cargar 0x80
 		BRNE	FIN_PORTC_ISR
 		LDI		estado, 0b10000000
 		RJMP	FIN_PORTC_ISR
-	INC_DISPLAY:
+	INC_DISPLAY:	// Activa bandera de incremento y verifica la alarma
 		SBR		bandera_ACCION, 0b00000100
 		RJMP	ALARMA_ON
-	DEC_DISPLAY:
+	DEC_DISPLAY:	// Activa bandera de decremento y verifica la alarma
 		SBR		bandera_ACCION, 0b00001000
 		RJMP	ALARMA_ON
-	ALARMA_ON:
+	ALARMA_ON:		// Se asegura de que este en configuracion alarma
 		CPI		estado, 0b01000000
 		BREQ	ACT_ALARMA
 		CPI		estado, 0b10000000
 		BREQ	ACT_ALARMA
 		RJMP	FIN_PORTC_ISR
 		ACT_ALARMA:
-		SBR		bandera_ACCION, 0b00010000
+		SBR		bandera_ACCION, 0b00010000 // Bandera de alarma activada
 FIN_PORTC_ISR:
 	POP		R16
 	OUT		SREG, R16

@@ -1,5 +1,5 @@
 
-AVRASM ver. 2.2.8  D:\Documents\GitHub\Proyecto1\Proyecto1\Proyecto1\main.asm Thu Mar 20 21:07:49 2025
+AVRASM ver. 2.2.8  D:\Documents\GitHub\Proyecto1\Proyecto1\Proyecto1\main.asm Thu Mar 20 22:55:24 2025
 
 [builtin](2): Including file 'C:/Program Files (x86)\Atmel\Studio\7.0\Packs\atmel\ATmega_DFP\1.7.374\avrasm\inc\m328Pdef.inc'
 D:\Documents\GitHub\Proyecto1\Proyecto1\Proyecto1\main.asm(17): Including file 'C:/Program Files (x86)\Atmel\Studio\7.0\Packs\atmel\ATmega_DFP\1.7.374\avrasm\inc\M328PDEF.inc'
@@ -1186,16 +1186,16 @@ D:\Documents\GitHub\Proyecto1\Proyecto1\Proyecto1\main.asm(17): Including file '
                                  //				LOOP INFINITO
                                  //****************************************
                                  MAIN:
-000074 940e 0086                 	CALL	SIGN_ESTADO
-000076 fd60                      	SBRC	bandera_ACCION, 0
+000074 940e 0086                 	CALL	SIGN_ESTADO			// Enciende el LED de modo
+000076 fd60                      	SBRC	bandera_ACCION, 0	// Incremento automático de reloj
 000077 940e 0143                 	CALL	INC_HORA
-000079 fd61                      	SBRC	bandera_ACCION, 1
+000079 fd61                      	SBRC	bandera_ACCION, 1	// Cambio automático de día
 00007a 940e 0188                 	CALL	CAMBIO_DIA
-00007c fd62                      	SBRC	bandera_ACCION, 2
+00007c fd62                      	SBRC	bandera_ACCION, 2	// Botón incremento activado
 00007d 940e 0178                 	CALL	INCREMENTO
-00007f fd63                      	SBRC	bandera_ACCION, 3
+00007f fd63                      	SBRC	bandera_ACCION, 3	// Botón decremento activado
 000080 940e 00d9                 	CALL	DECREMENTO
-000082 fd65                      	SBRC	bandera_ACCION, 5
+000082 fd65                      	SBRC	bandera_ACCION, 5	// Bandera para comparar alarma
 000083 940e 0226                 	CALL	comparar_ALARMA
 000085 cfee                      	RJMP	MAIN
                                  
@@ -1203,7 +1203,7 @@ D:\Documents\GitHub\Proyecto1\Proyecto1\Proyecto1\main.asm(17): Including file '
                                  //			SUB-RUTINAS GENERALES
                                  //****************************************
                                  SIGN_ESTADO:
-000086 fd20                      	SBRC	estado, 0
+000086 fd20                      	SBRC	estado, 0		// Se verifica en que modo se esta
 000087 c010                      	RJMP	estado_RELOJ
 000088 fd21                      	SBRC	estado, 1
 000089 c012                      	RJMP	estado_FECHA
@@ -1222,112 +1222,112 @@ D:\Documents\GitHub\Proyecto1\Proyecto1\Proyecto1\main.asm(17): Including file '
 000096 3020                      	CPI		estado, 0x00
 000097 f061                      	BREQ	estado_ALARMA_activa
                                  	estado_RELOJ:
-000098 9a44                      		SBI		PORTC, 4
+000098 9a44                      		SBI		PORTC, 4		// Enciendo PC4 y apaga PC5 y PB5
 000099 9845                      		CBI		PORTC, 5
 00009a 2788                      		CLR		out_ALARMA
 00009b 9508                      		RET
                                  	estado_FECHA:
-00009c 9844                      		CBI		PORTC, 4
+00009c 9844                      		CBI		PORTC, 4		// Enciendo PC5 y apaga PC4 y PB5
 00009d 9a45                      		SBI		PORTC, 5
 00009e 2788                      		CLR		out_ALARMA
 00009f 9508                      		RET
                                  	estado_ALARMA:
-0000a0 9844                      		CBI		PORTC, 4
+0000a0 9844                      		CBI		PORTC, 4		// Enciendo PB5 y apaga PC4 y PC5
 0000a1 9845                      		CBI		PORTC, 5
 0000a2 e280                      		LDI		out_ALARMA, 0b00100000
 0000a3 9508                      		RET
-                                 	estado_ALARMA_activa:
+                                 	estado_ALARMA_activa:  // Se enciende PB4 que es el buzzer
 0000a4 9844                      		CBI		PORTC, 4
 0000a5 9845                      		CBI		PORTC, 5
-0000a6 e380                      		LDI		out_ALARMA, 0b00110000
+0000a6 e380                      		LDI		out_ALARMA, 0b00110000	// Enciendo PB5 y apaga PC4 y PC5
 0000a7 9508                      		RET
                                  // ---------------- LOGICA DE DECREMENTO ----------------
                                  DECREMENTO_MINUTOS:
 0000a8 9100 0101                 	LDS		variable1, minu_U
-0000aa 3000                      	CPI		variable1, 0x00
-0000ab f459                      	BRNE	SAVE_DEC_MINU
-0000ac e009                      	LDI		variable1, 0x09
-0000ad 9300 0101                 	STS		minu_U, variable1
+0000aa 3000                      	CPI		variable1, 0x00		// Antes de decrementar, se verifica si es 0
+0000ab f459                      	BRNE	SAVE_DEC_MINU		// Si no es 0 guarda el valor
+0000ac e009                      	LDI		variable1, 0x09		// Si es 0, carga 9 en unidad
+0000ad 9300 0101                 	STS		minu_U, variable1 
 0000af 9100 0100                 	LDS		variable1, minu_D
-0000b1 3000                      	CPI		variable1, 0x00
-0000b2 f441                      	BRNE	SAVE_DEC_MIND
-0000b3 e005                      	LDI		variable1, 0x05
+0000b1 3000                      	CPI		variable1, 0x00		// Verifica si decena es 0
+0000b2 f441                      	BRNE	SAVE_DEC_MIND		// Si no, salta a guardar la decena
+0000b3 e005                      	LDI		variable1, 0x05		// Si es 0, carga 5 a decena
 0000b4 9300 0100                 	STS		minu_D, variable1
 0000b6 9508                      	RET
                                  	SAVE_DEC_MINU:
-0000b7 950a                      		DEC		variable1
+0000b7 950a                      		DEC		variable1		// Decrementa y guarda
 0000b8 9300 0101                 		STS		minu_U, variable1
 0000ba 9508                      		RET
                                  	SAVE_DEC_MIND:
-0000bb 950a                      		DEC		variable1
+0000bb 950a                      		DEC		variable1		// Decrementa y guarda
 0000bc 9300 0100                 		STS		minu_D, variable1
 0000be 9508                      		RET
                                  
                                  DECREMENTO_HORAS:
 0000bf 9100 0103                 	LDS		variable1, hour_U
-0000c1 3000                      	CPI		variable1, 0x00
-0000c2 f471                      	BRNE	SAVE_DEC_HOURU
-0000c3 e009                      	LDI		variable1, 0x09
+0000c1 3000                      	CPI		variable1, 0x00			// Verifica si unidad es 0
+0000c2 f471                      	BRNE	SAVE_DEC_HOURU			// Si no es, salta a guardar unidad
+0000c3 e009                      	LDI		variable1, 0x09			// Si es 0, carga 9 a unidad
 0000c4 9300 0103                 	STS		hour_U, variable1
 0000c6 9100 0102                 	LDS		variable1, hour_D
-0000c8 3000                      	CPI		variable1, 0x00
-0000c9 f459                      	BRNE	SAVE_DEC_HOURD
-0000ca e002                      	LDI		variable1, 0x02
+0000c8 3000                      	CPI		variable1, 0x00			// Verifica si decena es 0
+0000c9 f459                      	BRNE	SAVE_DEC_HOURD			// Si no es, salta a guardar decena
+0000ca e002                      	LDI		variable1, 0x02			// Si es 0, guarda 2 en decena y 3 en unidad
 0000cb 9300 0102                 	STS		hour_D, variable1
 0000cd e003                      	LDI		variable1, 0x03
 0000ce 9300 0103                 	STS		hour_U, variable1
 0000d0 9508                      	RET
                                  	SAVE_DEC_HOURU:
-0000d1 950a                      		DEC		variable1
+0000d1 950a                      		DEC		variable1		// Decrementa y guarda
 0000d2 9300 0103                 		STS		hour_U, variable1
 0000d4 9508                      		RET
                                  	SAVE_DEC_HOURD:
-0000d5 950a                      		DEC		variable1
+0000d5 950a                      		DEC		variable1		// Decrementa y guarda
 0000d6 9300 0102                 		STS		hour_D, variable1
 0000d8 9508                      		RET
                                  
-                                 DECREMENTO:
-0000d9 7f67                      	CBR		bandera_ACCION, 0b00001000
-0000da 3024                      	CPI		estado, 0b00000100
-0000db f261                      	BREQ	DECREMENTO_MINUTOS
-0000dc 3028                      	CPI		estado, 0b00001000
+                                 DECREMENTO:		// Segun el estado, llama al bloque correspondiente
+0000d9 7f67                      	CBR		bandera_ACCION, 0b00001000	// Apaga bandera decremento
+0000da 3024                      	CPI		estado, 0b00000100			// Si estado es conf_minutos
+0000db f261                      	BREQ	DECREMENTO_MINUTOS	
+0000dc 3028                      	CPI		estado, 0b00001000			// Si estado es conf_horas
 0000dd f309                      	BREQ	DECREMENTO_HORAS
-0000de 3120                      	CPI		estado, 0b00010000
+0000de 3120                      	CPI		estado, 0b00010000			// Si estado es conf_mes
 0000df f1d9                      	BREQ	DECREMENTO_MES
-0000e0 3220                      	CPI		estado, 0b00100000
+0000e0 3220                      	CPI		estado, 0b00100000			// Si estado es conf_dia
 0000e1 f039                      	BREQ	DECREMENTO_DIAS
-0000e2 3420                      	CPI		estado, 0b01000000
+0000e2 3420                      	CPI		estado, 0b01000000			// Si estado es conf_alarma minutos
 0000e3 f019                      	BREQ	DEC_ALARMA_MIN
-0000e4 3820                      	CPI		estado, 0b10000000
+0000e4 3820                      	CPI		estado, 0b10000000			// Si estado es conf_alarma hora
 0000e5 f011                      	BREQ	DEC_ALARMA_HOUR
 0000e6 9508                      	RET
                                  
-                                 DEC_ALARMA_MIN:
+                                 DEC_ALARMA_MIN:		// Salto a bloque (quedaban muy lejos)
 0000e7 c10d                      	RJMP	DECREMENTO_ALARMA_MIN
-                                 DEC_ALARMA_HOUR:
+                                 DEC_ALARMA_HOUR:	// Salto a bloque (quedaban muy lejos)
 0000e8 c123                      	RJMP	DECREMENTO_ALARMA_HOUR
                                  
                                  DECREMENTO_DIAS:
-0000e9 2d09                      	MOV		variable1, contador_dia
-0000ea 3001                      	CPI		variable1, 0x01
-0000eb f091                      	BREQ	UNDERFLOW_DIA
-0000ec 949a                      	DEC		contador_dia
+0000e9 2d09                      	MOV		variable1, contador_dia		// Copia contador_dia para usar CPI
+0000ea 3001                      	CPI		variable1, 0x01				// Verifica se contador_dia es 1
+0000eb f091                      	BREQ	UNDERFLOW_DIA				// Si es así, hace underflow
+0000ec 949a                      	DEC		contador_dia				// De lo contrario, disminuye dia
                                  
 0000ed 9100 0105                 	LDS		variable1, dia_U
-0000ef 3000                      	CPI		variable1, 0x00
-0000f0 f449                      	BRNE	SAVE_DEC_DIAU
-0000f1 e009                      	LDI		variable1, 0x09
+0000ef 3000                      	CPI		variable1, 0x00			// Verifica si la unidad es 0
+0000f0 f449                      	BRNE	SAVE_DEC_DIAU			// Si no es, guarda unidad
+0000f1 e009                      	LDI		variable1, 0x09			// Si es 0, guarda 9
 0000f2 9300 0105                 	STS		dia_U, variable1
 0000f4 9100 0104                 	LDS		variable1, dia_D
-0000f6 950a                      	DEC		variable1
+0000f6 950a                      	DEC		variable1			// Decrementa decena y guarda
 0000f7 9300 0104                 	STS		dia_D, variable1
 0000f9 9508                      	RET
                                  	SAVE_DEC_DIAU:
-0000fa 950a                      		DEC		variable1
+0000fa 950a                      		DEC		variable1		// Decrementa unidad y guarda
 0000fb 9300 0105                 		STS		dia_U, variable1
 0000fd 9508                      		RET
-                                 	UNDERFLOW_DIA:
-0000fe 2c98                      		MOV		contador_dia, max_dia
+                                 	UNDERFLOW_DIA: // Dependiendo del max_dia se escoge el bloque
+0000fe 2c98                      		MOV		contador_dia, max_dia // Copia max_dia en contador_dia
 0000ff 2d08                      		MOV		variable1, max_dia
 000100 310f                      		CPI		variable1, 0x1F		// Mes de 31 dia
 000101 f021                      		BREQ	REINICIO_31DIAS
@@ -1335,19 +1335,19 @@ D:\Documents\GitHub\Proyecto1\Proyecto1\Proyecto1\main.asm(17): Including file '
 000103 f049                      		BREQ	REINICIO_30DIAS
 000104 310c                      		CPI		variable1, 0x1C		// Mes de 28 dia
 000105 f071                      		BREQ	REINICIO_28DIAS
-                                 	REINICIO_31DIAS:
+                                 	REINICIO_31DIAS:  // Carga 3 y 1 a decena y unidad, y guarda
 000106 e001                      		LDI		variable1, 0x01
 000107 9300 0105                 		STS		dia_U, variable1
 000109 e003                      		LDI		variable1, 0x03
 00010a 9300 0104                 		STS		dia_D, variable1
 00010c 9508                      		RET
-                                 	REINICIO_30DIAS:
+                                 	REINICIO_30DIAS:	// Carga 3 y 0 a decena y unidad, y guarda
 00010d e000                      		LDI		variable1, 0x00
 00010e 9300 0105                 		STS		dia_U, variable1
 000110 e003                      		LDI		variable1, 0x03
 000111 9300 0104                 		STS		dia_D, variable1
 000113 9508                      		RET
-                                 	REINICIO_28DIAS:
+                                 	REINICIO_28DIAS:	// Carga 2 y 8 a decena y unidad, y guarda
 000114 e008                      		LDI		variable1, 0x08
 000115 9300 0105                 		STS		dia_U, variable1
 000117 e002                      		LDI		variable1, 0x02
@@ -1386,7 +1386,7 @@ D:\Documents\GitHub\Proyecto1\Proyecto1\Proyecto1\main.asm(17): Including file '
 00013c c000                      		RJMP	MAXIMO_DIAS
                                  	MAXIMO_DIAS:
 00013d 954a                      		DEC		contador_mes
-00013e e0f0                      		LDI		ZH, HIGH(Tabla_maxDIAS<<1)	// Parte alta de Tabla7seg que esta en la Flash
+00013e e0f0                      		LDI		ZH, HIGH(Tabla_maxDIAS<<1)	// Parte alta de Tabla_maxDIAS que esta en la Flash
 00013f e4ec                      		LDI		ZL, LOW(Tabla_maxDIAS<<1)	// Parte baja de la tabla
 000140 0fe4                      		ADD		ZL, contador_mes			// Suma el contador al puntero Z
 000141 9084                      		LPM		max_dia, Z					// Copia el valor del puntero
@@ -1497,7 +1497,7 @@ D:\Documents\GitHub\Proyecto1\Proyecto1\Proyecto1\main.asm(17): Including file '
 0001a6 9508                      	RET
                                  
 0001a7 9543                      	INC		contador_mes
-0001a8 e0f0                      	LDI		ZH, HIGH(Tabla_maxDIAS<<1)	// Parte alta de Tabla7seg que esta en la Flash
+0001a8 e0f0                      	LDI		ZH, HIGH(Tabla_maxDIAS<<1)	// Parte alta de Tabla_maxDIAS que esta en la Flash
 0001a9 e4ec                      	LDI		ZL, LOW(Tabla_maxDIAS<<1)	// Parte baja de la tabla
 0001aa 0fe4                      	ADD		ZL, contador_mes			// Suma el contador al puntero Z
 0001ab 9084                      	LPM		max_dia, Z					// Copia el valor del puntero
@@ -1616,28 +1616,28 @@ D:\Documents\GitHub\Proyecto1\Proyecto1\Proyecto1\main.asm(17): Including file '
 000226 7d6f                      	CBR		bandera_ACCION, 0b00100000
 000227 9100 0101                 	LDS		variable1, minu_U
 000229 9110 0109                 	LDS		variable2, Aminu_U
-00022b 1301                      	CPSE	variable1, variable2
-00022c 9508                      	RET 
-00022d 9100 0100                 	LDS		variable1, minu_D
+00022b 1301                      	CPSE	variable1, variable2	// Verifica si las unidades de minutos coinciden 
+00022c 9508                      	RET			// De lo contrario regresa
+00022d 9100 0100                 	LDS		variable1, minu_D		
 00022f 9110 0108                 	LDS		variable2, Aminu_D
-000231 1301                      	CPSE	variable1, variable2
+000231 1301                      	CPSE	variable1, variable2	// Verifica si las decenas de minutos coinciden
 000232 9508                      	RET
 000233 9100 0103                 	LDS		variable1, hour_U
 000235 9110 010b                 	LDS		variable2, Ahour_U
-000237 1301                      	CPSE	variable1, variable2
+000237 1301                      	CPSE	variable1, variable2	// Verifica si las unidades de horas coinciden
 000238 9508                      	RET
 000239 9100 0102                 	LDS		variable1, hour_D
 00023b 9110 010a                 	LDS		variable2, Ahour_D
-00023d 1301                      	CPSE	variable1, variable2
+00023d 1301                      	CPSE	variable1, variable2	// Verifica si las decenas de horas coinciden
 00023e 9508                      	RET
-00023f 2700                      	CLR		variable1
+00023f 2700                      	CLR		variable1			// Limpia variables de alarma
 000240 9300 0109                 	STS		Aminu_U, variable1
 000242 9300 0108                 	STS		Aminu_D, variable1
 000244 9300 010b                 	STS		Ahour_U, variable1
 000246 9300 010a                 	STS		Ahour_D, variable1
-000248 6180                      	SBR		out_ALARMA, 0b00010000
-000249 7e6f                      	CBR		bandera_ACCION, 0b00010000
-00024a 2722                      	CLR		estado
+000248 6180                      	SBR		out_ALARMA, 0b00010000	
+000249 7e6f                      	CBR		bandera_ACCION, 0b00010000	// Activa bandera alarma_activada
+00024a 2722                      	CLR		estado						// Limpia estado para entrar a alarma_activada
 00024b 9508                      	RET
                                  
                                  // ---------------- LOGICA DE SALIDAS ----------------
@@ -1682,7 +1682,7 @@ D:\Documents\GitHub\Proyecto1\Proyecto1\Proyecto1\main.asm(17): Including file '
 000274 931f                      	PUSH	R17
 000275 b70f                      	IN		R16, SREG
 000276 930f                      	PUSH	R16
-                                 	
+                                 	// Multiplexado de PORTB
 000277 b153                      	IN		out_PORTB, PINB
 000278 705f                      	ANDI	out_PORTB, 0x0F
 000279 0f55                      	LSL		out_PORTB
@@ -1694,19 +1694,19 @@ D:\Documents\GitHub\Proyecto1\Proyecto1\Proyecto1\main.asm(17): Including file '
 00027e 203a                      	AND		out_PORTD, puntos_LED
                                  
 00027f fd20                      	SBRC	estado, 0
-000280 940e 024c                 	CALL	MOSTRAR_HORA
+000280 940e 024c                 	CALL	MOSTRAR_HORA	// Muestra la hora en el display
 000282 fd21                      	SBRC	estado, 1
 000283 940e 0259                 	CALL	MOSTRAR_FECHA	// Muestra la Fecha en el display
 000285 fd22                      	SBRC	estado, 2
-000286 940e 024c                 	CALL	MOSTRAR_HORA
+000286 940e 024c                 	CALL	MOSTRAR_HORA	// Muestra la hora en el display
 000288 fd23                      	SBRC	estado, 3
 000289 940e 024c                 	CALL	MOSTRAR_HORA	// Muestra la hora en el display
 00028b fd24                      	SBRC	estado, 4
-00028c 940e 0259                 	CALL	MOSTRAR_FECHA
+00028c 940e 0259                 	CALL	MOSTRAR_FECHA	// Muestra la Fecha en el display
 00028e fd25                      	SBRC	estado, 5
 00028f 940e 0259                 	CALL	MOSTRAR_FECHA	// Muestra la fecha en el display
 000291 fd26                      	SBRC	estado, 6
-000292 940e 0266                 	CALL	MOSTRAR_ALARMA
+000292 940e 0266                 	CALL	MOSTRAR_ALARMA	// Muestra la alarma en el display
 000294 fd27                      	SBRC	estado, 7
 000295 940e 0266                 	CALL	MOSTRAR_ALARMA	// Muestra la alarma en el display
 000297 3020                      	CPI		estado, 0x00
@@ -1719,11 +1719,11 @@ D:\Documents\GitHub\Proyecto1\Proyecto1\Proyecto1\main.asm(17): Including file '
 00029e 9074                      	LPM		SALIDA7, Z				// Copia el valor del puntero
                                  	
 00029f e000                      	LDI		R16, 0x00
-0002a0 16b0                      	CP		bandera_BLINK, R16
+0002a0 16b0                      	CP		bandera_BLINK, R16	// Si bandera es 0, Apagar displays
 0002a1 f529                      	BRNE	FIN_TIMER0
-0002a2 3024                      	CPI		estado, 0b00000100
+0002a2 3024                      	CPI		estado, 0b00000100	// En estado 3, 5, 7 parpadena display 1 y 2
 0002a3 f0a9                      	BREQ	APAGAR_DISPLAY12
-0002a4 3028                      	CPI		estado, 0b00001000
+0002a4 3028                      	CPI		estado, 0b00001000	// En estado 4, 6, 8 parpadena display 3 y 4
 0002a5 f0d1                      	BREQ	APAGAR_DISPLAY34
 0002a6 3120                      	CPI		estado, 0b00010000
 0002a7 f089                      	BREQ	APAGAR_DISPLAY12
@@ -1736,7 +1736,7 @@ D:\Documents\GitHub\Proyecto1\Proyecto1\Proyecto1\main.asm(17): Including file '
 0002ae 3020                      	CPI		estado, 0x00
 0002af f009                      	BREQ	estado_00
 0002b0 c016                      	RJMP	FIN_TIMER0
-                                 	estado_00:
+                                 	estado_00:	// En estado 0 parpadean todos los DISPLAYS
 0002b1 3051                      		CPI		out_PORTB, 0b00000001
 0002b2 f031                      		BREQ	APAGAR_DISPLAY12
 0002b3 3052                      		CPI		out_PORTB, 0b00000010
@@ -1745,20 +1745,20 @@ D:\Documents\GitHub\Proyecto1\Proyecto1\Proyecto1\main.asm(17): Including file '
 0002b6 f049                      		BREQ	APAGAR_DISPLAY34
 0002b7 3058                      		CPI		out_PORTB, 0b00001000
 0002b8 f039                      		BREQ	APAGAR_DISPLAY34
-                                 	APAGAR_DISPLAY12:
-0002b9 3054                      		CPI		out_PORTB, 0b00000100
+                                 	APAGAR_DISPLAY12:	// Parpadeo de displays 0 y 1
+0002b9 3054                      		CPI		out_PORTB, 0b00000100	// Verifica que sean PB0 y PB1
 0002ba f061                      		BREQ	FIN_TIMER0
 0002bb 3058                      		CPI		out_PORTB, 0b00001000
 0002bc f051                      		BREQ	FIN_TIMER0
-0002bd e70f                      		LDI		R16, 0x7F
+0002bd e70f                      		LDI		R16, 0x7F		// Pone en 1 todos los pines de PORTD
 0002be 2e70                      		MOV		SALIDA7, R16
 0002bf c007                      		RJMP	FIN_TIMER0
-                                 	APAGAR_DISPLAY34:
-0002c0 3051                      		CPI		out_PORTB, 0b00000001
+                                 	APAGAR_DISPLAY34:	// Parpadeo de display 2 y 3
+0002c0 3051                      		CPI		out_PORTB, 0b00000001 // Verifica que sean PB0 y PB1
 0002c1 f029                      		BREQ	FIN_TIMER0
 0002c2 3052                      		CPI		out_PORTB, 0b00000010
 0002c3 f019                      		BREQ	FIN_TIMER0
-0002c4 e70f                      		LDI		R16, 0x7F
+0002c4 e70f                      		LDI		R16, 0x7F	// Pone en 1 todos los pines de PORTD
 0002c5 2e70                      		MOV		SALIDA7, R16
 0002c6 c000                      		RJMP	FIN_TIMER0
                                  FIN_TIMER0:
@@ -1766,11 +1766,11 @@ D:\Documents\GitHub\Proyecto1\Proyecto1\Proyecto1\main.asm(17): Including file '
 0002c8 2837                      	OR		out_PORTD, SALIDA7
 0002c9 b955                      	OUT		PORTB, out_PORTB
 0002ca b83b                      	OUT		PORTD, out_PORTD		// Muestra la salida en PORT D
-0002cb 9573                      	INC		ciclos_BLINK
-0002cc 3674                      	CPI		ciclos_BLINK, 100
+0002cb 9573                      	INC		ciclos_BLINK			// Parpadeo de displays
+0002cc 3674                      	CPI		ciclos_BLINK, 100		// Verifica si se cumple el ciclo
 0002cd f411                      	BRNE	continuar_FIN_TIMER0
 0002ce 2777                      	CLR		ciclos_BLINK
-0002cf 24b2                      	EOR		bandera_BLINK, compare_BLINK
+0002cf 24b2                      	EOR		bandera_BLINK, compare_BLINK	// Hace XOR para apagar o encender la bandera
                                  	continuar_FIN_TIMER0:
 0002d0 910f                      	POP		R16
 0002d1 bf0f                      	OUT		SREG, R16
@@ -1789,7 +1789,7 @@ D:\Documents\GitHub\Proyecto1\Proyecto1\Proyecto1\main.asm(17): Including file '
 0002da 243a                      	EOR		out_PORTD, puntos_LED
 0002db b83b                      	OUT		PORTD, out_PORTD
                                  	
-0002dc 3020                      	CPI		estado, 0x00
+0002dc 3020                      	CPI		estado, 0x00		// Incremento automático para estdo 0, 1, 2, 6 y 7
 0002dd f049                      	BREQ	INCREMENTO_HORA
 0002de 3021                      	CPI		estado, 0b00000001
 0002df f039                      	BREQ	INCREMENTO_HORA
@@ -1802,7 +1802,7 @@ D:\Documents\GitHub\Proyecto1\Proyecto1\Proyecto1\main.asm(17): Including file '
 0002e6 c007                      	RJMP	FIN_TIMER1
                                  	INCREMENTO_HORA:		// Incremento de HORA
 0002e7 9533                      	INC		ciclo_hora
-0002e8 3031                      	CPI		ciclo_hora, max_ciclosT1
+0002e8 3031                      	CPI		ciclo_hora, max_ciclosT1		// Verifica si se cumplen los ciclos
 0002e9 f421                      	BRNE	FIN_TIMER1
 0002ea 2733                      	CLR		ciclo_hora
 0002eb 6061                      	SBR		bandera_ACCION, 0b00000001		// Activa el cambio de dia
@@ -1821,42 +1821,42 @@ D:\Documents\GitHub\Proyecto1\Proyecto1\Proyecto1\main.asm(17): Including file '
 0002f5 b70f                      	IN		R16, SREG
 0002f6 930f                      	PUSH	R16
                                  
-0002f7 b046                      	IN		in_PORTC, PINC
-0002f8 fe40                      	SBRS	in_PORTC, 0
+0002f7 b046                      	IN		in_PORTC, PINC	// Lee PIN C
+0002f8 fe40                      	SBRS	in_PORTC, 0		// PC0 es incremento
 0002f9 c011                      	RJMP	INC_DISPLAY
-0002fa fe41                      	SBRS	in_PORTC, 1
+0002fa fe41                      	SBRS	in_PORTC, 1		// PC1 es decremento
 0002fb c011                      	RJMP	DEC_DISPLAY
-0002fc fe42                      	SBRS	in_PORTC, 2
+0002fc fe42                      	SBRS	in_PORTC, 2		// PC2 es aumento de estado
 0002fd c003                      	RJMP	INC_ESTADO
-0002fe fe43                      	SBRS	in_PORTC, 3
+0002fe fe43                      	SBRS	in_PORTC, 3		// PC3 es decremento de estado
 0002ff c006                      	RJMP	DEC_ESTADO
-000300 c014                      	RJMP	FIN_PORTC_ISR
+000300 c014                      	RJMP	FIN_PORTC_ISR	// Salta al final
                                  	INC_ESTADO:
-000301 0f22                      		LSL		estado
-000302 3020                      		CPI		estado, 0x00
+000301 0f22                      		LSL		estado			// corre a la izquierda los bits
+000302 3020                      		CPI		estado, 0x00	// si hay overflow, carga 0x01
 000303 f489                      		BRNE	FIN_PORTC_ISR
 000304 e021                      		LDI		estado, 0b00000001
 000305 c00f                      		RJMP	FIN_PORTC_ISR
                                  	DEC_ESTADO:
-000306 9526                      		LSR		estado
-000307 3020                      		CPI		estado, 0x00
+000306 9526                      		LSR		estado			// corre a la derecha los bits
+000307 3020                      		CPI		estado, 0x00	// Si hay underflow, cargar 0x80
 000308 f461                      		BRNE	FIN_PORTC_ISR
 000309 e820                      		LDI		estado, 0b10000000
 00030a c00a                      		RJMP	FIN_PORTC_ISR
-                                 	INC_DISPLAY:
+                                 	INC_DISPLAY:	// Activa bandera de incremento y verifica la alarma
 00030b 6064                      		SBR		bandera_ACCION, 0b00000100
 00030c c002                      		RJMP	ALARMA_ON
-                                 	DEC_DISPLAY:
+                                 	DEC_DISPLAY:	// Activa bandera de decremento y verifica la alarma
 00030d 6068                      		SBR		bandera_ACCION, 0b00001000
 00030e c000                      		RJMP	ALARMA_ON
-                                 	ALARMA_ON:
+                                 	ALARMA_ON:		// Se asegura de que este en configuracion alarma
 00030f 3420                      		CPI		estado, 0b01000000
 000310 f019                      		BREQ	ACT_ALARMA
 000311 3820                      		CPI		estado, 0b10000000
 000312 f009                      		BREQ	ACT_ALARMA
 000313 c001                      		RJMP	FIN_PORTC_ISR
                                  		ACT_ALARMA:
-000314 6160                      		SBR		bandera_ACCION, 0b00010000
+000314 6160                      		SBR		bandera_ACCION, 0b00010000 // Bandera de alarma activada
                                  FIN_PORTC_ISR:
 000315 910f                      	POP		R16
 000316 bf0f                      	OUT		SREG, R16
