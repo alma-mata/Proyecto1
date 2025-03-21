@@ -19,7 +19,7 @@
 .equ	T0VALUE = 131
 .equ	T1VALUEH = 0x0B
 .equ	T1VALUEL = 0xDC		//0x0BDC = 3036
-.equ	max_ciclosT1 = 120
+.equ	max_ciclosT1 = 1
 // Variables globales (Registros)
 .def	compare_BLINK = R2
 .def	out_PORTD = R3
@@ -137,6 +137,7 @@ SETUP:
 	CLR		bandera_BLINK
 	CLR		ciclos_BLINK
 	CLR		out_ALARMA
+	CLR		bandera_ACCION
 
 	CALL	NUEVO_MES
 	SEI
@@ -353,7 +354,7 @@ DECREMENTO_MES:
 		RET
 // ---------------- LOGICA DE HORA ----------------
 INC_HORA:
-	CBR		bandera_ACCION, 1
+	CBR		bandera_ACCION, 0b00000001
 
 	AUMENTO_MINUTOS:
 	LDS		variable1, minu_U
@@ -425,7 +426,7 @@ INC_ALARMA_HOUR:
 
 // ---------------- LOGICA DE FECHA ----------------
 CAMBIO_DIA:
-	CBR		bandera_ACCION, 2
+	CBR		bandera_ACCION, 0b00000010
 	AUMENTO_DIA:
 	CP		contador_dia, max_dia
 	BREQ	NUEVO_MES
@@ -744,7 +745,7 @@ TIMER1_ISR:
 	IN		R16, SREG
 	PUSH	R16
 	// Parpadeo de LEDs
-	IN		out_PORTD, PORTD
+	IN		out_PORTD, PIND
 	EOR		out_PORTD, puntos_LED
 	OUT		PORTD, out_PORTD
 	
