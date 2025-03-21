@@ -765,7 +765,7 @@ TIMER1_ISR:
 	CPI		ciclo_hora, max_ciclosT1		// Verifica si se cumplen los ciclos
 	BRNE	FIN_TIMER1
 	CLR		ciclo_hora
-	SBR		bandera_ACCION, 0b00000001		// Activa el cambio de dia
+	SBR		bandera_ACCION, 0b00000001		// Activa el cambio de hora
 	SBRC	bandera_ACCION, 4				// Si alarma esta activa
 	SBR		bandera_ACCION, 0b00100000		// Activar comparar alarma
 FIN_TIMER1:
