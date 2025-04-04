@@ -1,5 +1,5 @@
 
-AVRASM ver. 2.2.8  D:\Documents\GitHub\Proyecto1\Proyecto1\Proyecto1\main.asm Thu Mar 20 22:55:24 2025
+AVRASM ver. 2.2.8  D:\Documents\GitHub\Proyecto1\Proyecto1\Proyecto1\main.asm Fri Mar 21 16:41:29 2025
 
 
 EQU  SIGNATURE_000 0000001e
@@ -698,7 +698,7 @@ EQU  INT_VECTORS_SIZE 00000034
 EQU  T0VALUE      00000083
 EQU  T1VALUEH     0000000b
 EQU  T1VALUEL     000000dc
-EQU  max_ciclosT1 00000001
+EQU  max_ciclosT1 00000078
 DEF  compare_BLINK r2
 DEF  out_PORTD    r3
 DEF  in_PORTC     r4

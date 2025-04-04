@@ -19,7 +19,7 @@
 .equ	T0VALUE = 131
 .equ	T1VALUEH = 0x0B
 .equ	T1VALUEL = 0xDC		//0x0BDC = 3036
-.equ	max_ciclosT1 = 1
+.equ	max_ciclosT1 = 120
 // Variables globales (Registros)
 .def	compare_BLINK = R2
 .def	out_PORTD = R3

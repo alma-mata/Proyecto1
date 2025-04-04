@@ -1,5 +1,5 @@
 
-AVRASM ver. 2.2.8  D:\Documents\GitHub\Proyecto1\Proyecto1\Proyecto1\main.asm Thu Mar 20 22:55:24 2025
+AVRASM ver. 2.2.8  D:\Documents\GitHub\Proyecto1\Proyecto1\Proyecto1\main.asm Fri Mar 21 16:41:29 2025
 
 [builtin](2): Including file 'C:/Program Files (x86)\Atmel\Studio\7.0\Packs\atmel\ATmega_DFP\1.7.374\avrasm\inc\m328Pdef.inc'
 D:\Documents\GitHub\Proyecto1\Proyecto1\Proyecto1\main.asm(17): Including file 'C:/Program Files (x86)\Atmel\Studio\7.0\Packs\atmel\ATmega_DFP\1.7.374\avrasm\inc\M328PDEF.inc'
@@ -1050,7 +1050,7 @@ D:\Documents\GitHub\Proyecto1\Proyecto1\Proyecto1\main.asm(17): Including file '
                                  .equ	T0VALUE = 131
                                  .equ	T1VALUEH = 0x0B
                                  .equ	T1VALUEL = 0xDC		//0x0BDC = 3036
-                                 .equ	max_ciclosT1 = 1
+                                 .equ	max_ciclosT1 = 120
                                  // Variables globales (Registros)
                                  .def	compare_BLINK = R2
                                  .def	out_PORTD = R3
@@ -1444,18 +1444,18 @@ D:\Documents\GitHub\Proyecto1\Proyecto1\Proyecto1\main.asm(17): Including file '
 000177 9508                      		RET
                                  
                                  INCREMENTO:
-000178 7f6b                      	CBR		bandera_ACCION, 0b00000100
-000179 3024                      	CPI		estado, 0b00000100
+000178 7f6b                      	CBR		bandera_ACCION, 0b00000100 // Limpia bandera de incremento
+000179 3024                      	CPI		estado, 0b00000100		// Estado configuracion minutos
 00017a f249                      	BREQ	AUMENTO_MINUTOS
-00017b 3028                      	CPI		estado, 0b00001000
+00017b 3028                      	CPI		estado, 0b00001000		// Estado configuracion horas
 00017c f2d1                      	BREQ	AUMENTO_HORA
-00017d 3120                      	CPI		estado, 0b00010000
+00017d 3120                      	CPI		estado, 0b00010000		// Estado configuracion mes
 00017e f0f1                      	BREQ	NUEVO_MES
-00017f 3220                      	CPI		estado, 0b00100000
+00017f 3220                      	CPI		estado, 0b00100000		// Estado configuracion dia
 000180 f041                      	BREQ	AUMENTO_DIA
-000181 3420                      	CPI		estado, 0b01000000
+000181 3420                      	CPI		estado, 0b01000000		// Estado configuracion minutos alarma
 000182 f019                      	BREQ	INC_ALARMA_MIN
-000183 3820                      	CPI		estado, 0b10000000
+000183 3820                      	CPI		estado, 0b10000000		// Estado configuracion horas alarma
 000184 f011                      	BREQ	INC_ALARMA_HOUR
 000185 9508                      	RET
                                  
@@ -1468,16 +1468,16 @@ D:\Documents\GitHub\Proyecto1\Proyecto1\Proyecto1\main.asm(17): Including file '
                                  CAMBIO_DIA:
 000188 7f6d                      	CBR		bandera_ACCION, 0b00000010
                                  	AUMENTO_DIA:
-000189 1498                      	CP		contador_dia, max_dia
-00018a f091                      	BREQ	NUEVO_MES
+000189 1498                      	CP		contador_dia, max_dia	// Compara si llego al maximo de dias
+00018a f091                      	BREQ	NUEVO_MES				// Si es así, cambia de mes
 00018b 9493                      	INC		contador_dia
                                  
-00018c 9100 0105                 	LDS		variable1, dia_U
+00018c 9100 0105                 	LDS		variable1, dia_U	// Incrementa unidades
 00018e 9503                      	INC		variable1
-00018f 300a                      	CPI		variable1, 0x0A
-000190 f449                      	BRNE	GUARDAR_DIA_U
+00018f 300a                      	CPI		variable1, 0x0A		// Verifica si llegan a 10
+000190 f449                      	BRNE	GUARDAR_DIA_U		// Si no, solo guarda el valor
 000191 2700                      	CLR		variable1
-000192 9300 0105                 	STS		dia_U, variable1
+000192 9300 0105                 	STS		dia_U, variable1	// Si sí, carga 0 a unidades e incrementa decenas
 000194 9100 0104                 	LDS		variable1, dia_D
 000196 9503                      	INC		variable1
 000197 9300 0104                 	STS		dia_D, variable1
@@ -1493,27 +1493,27 @@ D:\Documents\GitHub\Proyecto1\Proyecto1\Proyecto1\main.asm(17): Including file '
 0001a0 9300 0105                 	STS		dia_U, variable1
 0001a2 e000                      	LDI		variable1, 0x00
 0001a3 9300 0104                 	STS		dia_D, variable1
-0001a5 fd25                      	SBRC	estado, 5
+0001a5 fd25                      	SBRC	estado, 5		// Si se esta en el estado 5, regresa
 0001a6 9508                      	RET
                                  
-0001a7 9543                      	INC		contador_mes
+0001a7 9543                      	INC		contador_mes	// Incrementa contador mes
 0001a8 e0f0                      	LDI		ZH, HIGH(Tabla_maxDIAS<<1)	// Parte alta de Tabla_maxDIAS que esta en la Flash
 0001a9 e4ec                      	LDI		ZL, LOW(Tabla_maxDIAS<<1)	// Parte baja de la tabla
 0001aa 0fe4                      	ADD		ZL, contador_mes			// Suma el contador al puntero Z
-0001ab 9084                      	LPM		max_dia, Z					// Copia el valor del puntero
+0001ab 9084                      	LPM		max_dia, Z					// Carga maximo de dias
                                  	
 0001ac 9100 0107                 	LDS		variable1, mes_U
-0001ae 3002                      	CPI		variable1, 0x02
-0001af f441                      	BRNE	CONTINUAR_GUARDADO_MES
-0001b0 9110 0106                 	LDS		variable2, mes_D
+0001ae 3002                      	CPI		variable1, 0x02			// Verifica si unidad es 2
+0001af f441                      	BRNE	CONTINUAR_GUARDADO_MES	// Si no, solo continua
+0001b0 9110 0106                 	LDS		variable2, mes_D		// Si si, verifica si decena es 1
 0001b2 3011                      	CPI		variable2, 0x01
-0001b3 f421                      	BRNE	CONTINUAR_GUARDADO_MES
+0001b3 f421                      	BRNE	CONTINUAR_GUARDADO_MES // Si no, continua
 0001b4 e000                      	LDI		variable1, 0x00
-0001b5 9300 0106                 	STS		mes_D, variable1
+0001b5 9300 0106                 	STS		mes_D, variable1	// Si si, hace overflow
 0001b7 2744                      	CLR		contador_mes
                                  	CONTINUAR_GUARDADO_MES:
-0001b8 3049                      		CPI		contador_mes, 0x09
-0001b9 f439                      		BRNE	GUARDAR_MES_U
+0001b8 3049                      		CPI		contador_mes, 0x09 // Si llega a 10, carga 0 y 1 en unidad y decena
+0001b9 f439                      		BRNE	GUARDAR_MES_U		// Si no, guarda la unidad
 0001ba e000                      		LDI		variable1, 0x00
 0001bb 9300 0107                 		STS		mes_U, variable1
 0001bd e001                      		LDI		variable1, 0x01
@@ -1525,7 +1525,7 @@ D:\Documents\GitHub\Proyecto1\Proyecto1\Proyecto1\main.asm(17): Including file '
 0001c4 9508                      		RET
                                  
                                  // ---------------- LOGICA DE ALARMA ----------------
-                                 AUMENTO_ALARMA_MIN:
+                                 AUMENTO_ALARMA_MIN:		//Misma logica que inc minutos reloj
 0001c5 9100 0109                 	LDS		variable1, Aminu_U
 0001c7 9503                      	INC		variable1
 0001c8 300a                      	CPI		variable1, 0x0A
@@ -1545,7 +1545,7 @@ D:\Documents\GitHub\Proyecto1\Proyecto1\Proyecto1\main.asm(17): Including file '
                                  	GUARDAR_AMINU_D:
 0001d9 9300 0108                 		STS		Aminu_D, variable1
 0001db 9508                      		RET
-                                 AUMENTO_ALARMA_HOUR:
+                                 AUMENTO_ALARMA_HOUR:	//Misma logica que inc horas reloj
 0001dc 9100 010b                 	LDS		variable1, Ahour_U
 0001de 9110 010a                 	LDS		variable2, Ahour_D
 0001e0 9503                      	INC		variable1
@@ -1568,7 +1568,7 @@ D:\Documents\GitHub\Proyecto1\Proyecto1\Proyecto1\main.asm(17): Including file '
 0001f2 9310 010a                 			STS		Ahour_D, variable2
 0001f4 9508                      			RET
                                  
-                                 DECREMENTO_ALARMA_MIN:
+                                 DECREMENTO_ALARMA_MIN:	//Misma logica que dec minutos reloj
 0001f5 9100 0109                 	LDS		variable1, Aminu_U
 0001f7 3000                      	CPI		variable1, 0x00
 0001f8 f459                      	BRNE	SAVE_DEC_AMINU
@@ -1589,7 +1589,7 @@ D:\Documents\GitHub\Proyecto1\Proyecto1\Proyecto1\main.asm(17): Including file '
 000209 9300 0108                 		STS		Aminu_D, variable1
 00020b 9508                      		RET
                                  
-                                 DECREMENTO_ALARMA_HOUR:
+                                 DECREMENTO_ALARMA_HOUR:  //Misma logica que dec horas reloj
 00020c 9100 010b                 	LDS		variable1, Ahour_U
 00020e 3000                      	CPI		variable1, 0x00
 00020f f471                      	BRNE	SAVE_DEC_AHOURU
@@ -1802,10 +1802,10 @@ D:\Documents\GitHub\Proyecto1\Proyecto1\Proyecto1\main.asm(17): Including file '
 0002e6 c007                      	RJMP	FIN_TIMER1
                                  	INCREMENTO_HORA:		// Incremento de HORA
 0002e7 9533                      	INC		ciclo_hora
-0002e8 3031                      	CPI		ciclo_hora, max_ciclosT1		// Verifica si se cumplen los ciclos
+0002e8 3738                      	CPI		ciclo_hora, max_ciclosT1		// Verifica si se cumplen los ciclos
 0002e9 f421                      	BRNE	FIN_TIMER1
 0002ea 2733                      	CLR		ciclo_hora
-0002eb 6061                      	SBR		bandera_ACCION, 0b00000001		// Activa el cambio de dia
+0002eb 6061                      	SBR		bandera_ACCION, 0b00000001		// Activa el cambio de hora
 0002ec fd64                      	SBRC	bandera_ACCION, 4				// Si alarma esta activa
 0002ed 6260                      	SBR		bandera_ACCION, 0b00100000		// Activar comparar alarma
                                  FIN_TIMER1:
